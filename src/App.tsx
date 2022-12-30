@@ -23,6 +23,7 @@ const Home = lazy(() => import('./views/Home'));
 const Farm = lazy(() => import('./views/Farm'));
 const Boardroom = lazy(() => import('./views/Boardroom'));
 const Bond = lazy(() => import('./views/Bond'));
+const Dashboard = lazy(() => import('./views/Dashboard'));
 const Xbomb = lazy(() => import('./views/Stake'));
 const Supply = lazy(() => import('./views/Supply'));
 // const SBS = lazy(() => import('./views/Sbs'));
@@ -61,6 +62,9 @@ const App: React.FC = () => {
             <Route path="/bond">
               <Bond />
             </Route>
+            <Route path="/dashboard">
+              <Dashboard />
+              </Route>
             <Route path="/xbomb">
               <Xbomb />
             </Route>
