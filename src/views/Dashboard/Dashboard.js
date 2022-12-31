@@ -2,19 +2,10 @@ import React, { useMemo,useEffect } from 'react';
 import { useWallet } from 'use-wallet';
 
 
-import styled from 'styled-components';
-import Spacer from '../../components/Spacer';
 
 import { makeStyles } from '@material-ui/core/styles';
-
 import { Box, Card, CardContent, Button, Typography, Grid } from '@material-ui/core';
-
-
  import CardMedia from '@mui/material/CardMedia';
-
-
-
-
 import Page from '../../components/Page';
 // for bomb price share price
 import useBombStats from '../../hooks/useBombStats';
@@ -31,8 +22,12 @@ import useBondStats from '../../hooks/useBondStats';
 //last hour twap price
 import useCashPriceInLastTWAP from '../../hooks/useCashPriceInLastTWAP';
 
-
-import useRedeemOnBoardroom from '../../hooks/useRedeemOnBoardroom';
+//boardroom
+//import Stake from '../Boardroom/components/Stake';
+//import Stake from '../Bank/components/Stake';
+import Stake from './components/Stake';
+import UnlockWallet from '../../components/UnlockWallet';
+import Harvest from './components/Harvest';
 import useStakedBalanceOnBoardroom from '../../hooks/useStakedBalanceOnBoardroom';
 import { getDisplayBalance } from '../../utils/formatBalance';
 import useCurrentEpoch from '../../hooks/useCurrentEpoch';
@@ -45,20 +40,22 @@ import useClaimRewardCheck from '../../hooks/boardroom/useClaimRewardCheck';
 import useWithdrawCheck from '../../hooks/boardroom/useWithdrawCheck';
 
 import { createGlobalStyle } from 'styled-components';
-
-
 import HomeImage from '../../assets/img/background.jpg';
-
-
-
-
-
-
 import useBank from '../../hooks/useBank';
 import useStatsForPool from '../../hooks/useStatsForPool';
-import useRedeem from '../../hooks/useRedeem';
-import {useParams} from 'react-router-dom';
+import useTotalValueLocked from '../../hooks/useTotalValueLocked';
+import useBanks from '../../hooks/useBanks';
+//btcb stake
+import Value from '../../components/Value';
+import useStakedBalance from '../../hooks/useStakedBalance';
+import useStakedTokenPriceInDollars from '../../hooks/useStakedTokenPriceInDollars';
 
+//btcb earning
+import useEarnings from '../../hooks/useEarnings';
+
+//redeembomb
+//import SupplyBomb from '../Supply/components/SupplyBomb';
+import useRedeemFromBomb from '../../hooks/useRedeemFromBomb';
 
 
 
@@ -71,8 +68,6 @@ const BackgroundImage = createGlobalStyle`
   }
 `;
 
-
-
 const useStyles = makeStyles((theme) => ({
     gridItem: {
       height: '100%',
@@ -82,12 +77,6 @@ const useStyles = makeStyles((theme) => ({
     },
   }));
 
-//   const theme = createTheme({
-//     palette: {
-//       primary: '#blue',
-//     },
-//   });
-
   const cardStyle = {
     display: 'block',
     width: '54vw',
@@ -96,21 +85,12 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: "#black"
 }
 
+const Dashboard = () => {
 
-
-
-  const Dashboard = () => {
-
-    const classes = useStyles();
     const { account } = useWallet();
-    const { onRedeem } = useRedeemOnBoardroom();
-    const stakedBalance = useStakedBalanceOnBoardroom();
     const currentEpoch = useCurrentEpoch();
     const cashStat = useCashPriceInEstimatedTWAP();
     const totalStaked = useTotalStakedOnBoardroom();
-    const boardroomAPR = useFetchBoardroomAPR();
-    const canClaimReward = useClaimRewardCheck();
-    const canWithdraw = useWithdrawCheck();
     const scalingFactor = useMemo(() => (cashStat ? Number(cashStat.priceInDollars).toFixed(4) : null), [cashStat]);
     const { to } = useTreasuryAllocationTimes();
 
@@ -127,12 +107,68 @@ const useStyles = makeStyles((theme) => ({
   const bondScale = (Number(cashPrice) / 100000000000000).toFixed(4); 
 
   //tvl
-  const {bankId} = useParams();
-  const bank = useBank(bankId);
-  let statsOnPool = useStatsForPool(bank);
+  useEffect(() => window.scrollTo(0, 0));
+
+//for tvl,daily returns %, stakes, earned rewards, we have to do the following
+const [banks] = useBanks()
+const btcb = useBank(banks[2].contract);
+const bsharebnb = useBank(banks[4].contract);
+const bombBSHARE = useBank(banks[5].contract);
+let btcbpool = useStatsForPool(btcb);
+let bnbpool = useStatsForPool(bsharebnb);
+let bombpool = useStatsForPool(bombBSHARE);
+
+//reddem
+const {redeem} = useRedeemFromBomb();
+
+
+const stakedBalanceBTCB = useStakedBalance(banks[2].contract,banks[2].poolId);
+const stakedTokenPriceInDollarsBTCB = useStakedTokenPriceInDollars(banks[2].depositTokenName, banks[2].depositToken);
+const tokenPriceInDollarsStackBTCB = useMemo(
+  () => (stakedTokenPriceInDollarsBTCB ? stakedTokenPriceInDollarsBTCB : null),
+  [stakedTokenPriceInDollarsBTCB],
+);
+const earnedInDollarsBTCBStacked = (
+  Number(tokenPriceInDollarsStackBTCB) * Number(getDisplayBalance(stakedBalanceBTCB, banks[2].depositToken.decimal))
+).toFixed(2);
+
+
+const stakedBalanceBNB = useStakedBalance(banks[4].contract,banks[4].poolId);
+const stakedTokenPriceInDollarsBNB = useStakedTokenPriceInDollars(banks[4].depositTokenName, banks[4].depositToken);
+const tokenPriceInDollarsStackBNB = useMemo(
+  () => (stakedTokenPriceInDollarsBNB ? stakedTokenPriceInDollarsBNB : null),
+  [stakedTokenPriceInDollarsBNB],
+);
+const earnedInDollarsBNBStacked= (
+  Number(tokenPriceInDollarsStackBNB) * Number(getDisplayBalance(stakedBalanceBNB, banks[4].depositToken.decimal))
+).toFixed(2);
 
 
 
+//EARNED BTCB
+const earningsBTCB = useEarnings(banks[2].contract, banks[2].earnTokenName, banks[2].poolId);
+//earned btcb in dollar
+const bombStatsBTCB = useBombStats();
+const tShareStats = useShareStats();
+const tokenStatsBTCB = banks[2].earnTokenName === 'BSHARE' ? tShareStats : bombStatsBTCB;
+const tokenPriceInDollarsHarvestBTCB = useMemo(
+  () => (tokenStatsBTCB ? Number(tokenStatsBTCB.priceInDollars).toFixed(2) : null),
+  [tokenStatsBTCB],
+);
+const earnedInDollarsBTCB = (Number(tokenPriceInDollarsHarvestBTCB) * Number(getDisplayBalance(earningsBTCB))).toFixed(2);
+
+//earned bnb
+
+//EARNED BTCB
+const earningsBNB = useEarnings(banks[4].contract, banks[4].earnTokenName, banks[2].poolId);
+//earned btcb in dollar
+
+const tokenStatsBNB = banks[4].earnTokenName === 'BSHARE' ? tShareStats : bombStatsBTCB;
+const tokenPriceInDollarsHarvestBNB = useMemo(
+  () => (tokenStatsBNB ? Number(tokenStatsBNB.priceInDollars).toFixed(2) : null),
+  [tokenStatsBNB],
+);
+const earnedInDollarsBNB = (Number(tokenPriceInDollarsHarvestBNB) * Number(getDisplayBalance(earningsBTCB))).toFixed(2);
 
 
     //for  btc price bomb price sgare price
@@ -145,6 +181,7 @@ const sharePriceInDollars = useMemo(
   () => (shareStats ? Number(shareStats.priceInDollars).toFixed(2) : null),
   [shareStats],
 );
+
 
     return (
     <Page>
@@ -192,8 +229,6 @@ const sharePriceInDollars = useMemo(
         <Typography> Live TWap  {scalingFactor} BTC</Typography>
         <Typography> Last hour twap price {bondScale || '-'}</Typography>
 
-        <Typography> Daily APR { statsOnPool?.dailyAPR}%</Typography>
-      <Typography> TVL ${statsOnPool?.TVL}</Typography>
       </CardContent>
    
     </Card>
@@ -205,8 +240,22 @@ const sharePriceInDollars = useMemo(
 <Card style={cardStyle}>
       
      
-<Typography>{getDisplayBalance(totalStaked)}</Typography>
-       <Typography></Typography> 
+<Typography>total staked {getDisplayBalance(totalStaked)}</Typography>
+       <Typography>Board room</Typography> 
+       <Typography>
+
+TVL = ${bombpool?.TVL}
+Daily returns = ${bombpool?.dailyAPR}
+       {!!account ? (
+            <Box mt={4}>
+
+                    <Stake />
+                    <Harvest />
+            </Box>
+        ) : (
+            <UnlockWallet />
+        )}
+       </Typography>
 </Card>
 
   </Grid>
@@ -221,11 +270,10 @@ const sharePriceInDollars = useMemo(
       />
      <CardContent>
         <Typography gutterBottom variant="h5" component="div">
-          Lizard
+        Lizards
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Lizards are a widespread group of squamate reptiles, with over 6,000
-          species, ranging across all continents except Antarctica
+          Advertisement
         </Typography>
       </CardContent>
 
@@ -240,14 +288,44 @@ const sharePriceInDollars = useMemo(
       />
       <CardContent>
         <Typography gutterBottom variant="h5" component="div">
-          Lizard
+         
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Lizards are a widespread group of squamate reptiles, with over 6,000
-          species, ranging across all continents except Antarctica
+          Bomb farms
         </Typography>
-      </CardContent>
+    
+           <Typography>Bomb-BTCB</Typography>
+                  <Typography>  TVL ${btcbpool?.TVL}</Typography>
+        <Typography>Daily APR</Typography>
+                <Typography>{btcbpool?.dailyAPR}%</Typography>
+                <Typography>your stake of btcb
+                <Value value={getDisplayBalance(stakedBalanceBTCB, banks[2].depositToken.decimal)} /> </Typography>
+                <Typography>IN DOLLARS  {`≈ $${earnedInDollarsBTCBStacked}`}</Typography>
+
+                <Typography>earned  IN BTCB Harvest</Typography>
+        <Typography>     
+           {getDisplayBalance(earningsBTCB)} 
+               in dollars {`≈ $${earnedInDollarsBTCB}`}
+               </Typography>  
+                {/* <Typography>earned total <Harvest bank={bank} /> </Typography> */}
+                <Typography>BSHARE-BNB</Typography>
+                  <Typography>  TVL ${bnbpool?.TVL}</Typography>
+        <Typography>Daily APR</Typography>
+                <Typography>{bnbpool?.dailyAPR}%</Typography>  
+                <Typography>your stake of BNB
+                 </Typography>  
+                <Typography> 
+               <Value value={getDisplayBalance(stakedBalanceBNB, banks[4].depositToken.decimal)} /> 
+                  {`≈ $${earnedInDollarsBNBStacked}`}
+                </Typography> 
+                <Typography>earned Harvest IN BNB</Typography>
+   <Typography>     
+           {getDisplayBalance(earningsBNB)} 
+               in dollars {`≈ $${earnedInDollarsBNB}`}
+               </Typography>  
      
+      </CardContent>
+
     </Card>
 
   </Grid> <Grid item xs={12} >
@@ -259,13 +337,15 @@ const sharePriceInDollars = useMemo(
       />
       <CardContent>
         <Typography gutterBottom variant="h5" component="div">
-          Lizard
+         Bomb
         </Typography>
         <Typography variant="body2" color="text.secondary">
       Current price  {Number(bondStat?.tokenInFtm).toFixed(4) || '-'}
 
      Last-Hour TWAP Price
-               
+               Bonds
+
+               <Button onClick = {redeem} > redeem</Button>
         </Typography>
 
       </CardContent>
@@ -276,13 +356,6 @@ const sharePriceInDollars = useMemo(
 </Grid>
 
 
-
-
-
-
-
-
-
         </Page>
 
     );
@@ -290,35 +363,6 @@ const sharePriceInDollars = useMemo(
 
 
 
-// const StyledBond = styled.div`
-// display: flex;
-// @media (max-width: 768px) {
-//   width: 100%;
-//   flex-flow: column nowrap;
-//   align-items: center;
-// }
-// `;
-
-// const StyledCardWrapper = styled.div`
-// display: flex;
-// flex: 1;
-// flex-direction: column;
-// @media (max-width: 768px) {
-//   width: 80%;
-// }
-// `;
-
-// const StyledStatsWrapper = styled.div`
-// display: flex;
-// flex: 0.8;
-// margin: 0 20px;
-// flex-direction: column;
-
-// @media (max-width: 768px) {
-//   width: 80%;
-//   margin: 16px 0;
-// }
-// `;
 
 
 export default Dashboard;
