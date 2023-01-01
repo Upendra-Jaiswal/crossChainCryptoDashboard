@@ -1,8 +1,5 @@
 import React, { useMemo,useEffect } from 'react';
 import { useWallet } from 'use-wallet';
-
-
-
 import { makeStyles } from '@material-ui/core/styles';
 import { Box, Card, CardContent, Button, Typography, Grid } from '@material-ui/core';
  import CardMedia from '@mui/material/CardMedia';
@@ -36,14 +33,10 @@ import useFetchBoardroomAPR from '../../hooks/useFetchBoardroomAPR';
 import useCashPriceInEstimatedTWAP from '../../hooks/useCashPriceInEstimatedTWAP';
 import useTreasuryAllocationTimes from '../../hooks/useTreasuryAllocationTimes';
 import useTotalStakedOnBoardroom from '../../hooks/useTotalStakedOnBoardroom';
-import useClaimRewardCheck from '../../hooks/boardroom/useClaimRewardCheck';
-import useWithdrawCheck from '../../hooks/boardroom/useWithdrawCheck';
-
 import { createGlobalStyle } from 'styled-components';
 import HomeImage from '../../assets/img/background.jpg';
 import useBank from '../../hooks/useBank';
 import useStatsForPool from '../../hooks/useStatsForPool';
-import useTotalValueLocked from '../../hooks/useTotalValueLocked';
 import useBanks from '../../hooks/useBanks';
 //btcb stake
 import Value from '../../components/Value';
@@ -57,6 +50,17 @@ import useEarnings from '../../hooks/useEarnings';
 //import SupplyBomb from '../Supply/components/SupplyBomb';
 import useRedeemFromBomb from '../../hooks/useRedeemFromBomb';
 
+//depositmodal for broadroom
+import DepositModal from '../Boardroom/components/DepositModal';
+import useTokenBalance from '../../hooks/useTokenBalance';
+import useModal from '../../hooks/useModal';
+import useBombFinance from '../../hooks/useBombFinance';
+import WithdrawModal from './components/WithdrawModal';
+import useStakeToBoardroom from '../../hooks/useStakeToBoardroom';
+//claim reward on boardroom
+import useHarvestFromBoardroom from '../../hooks/useHarvestFromBoardroom';
+import handleBuyBonds from  '../Bond/Bond'
+import  isBondPurchasable from '../Bond/Bond';
 
 
 
@@ -68,14 +72,6 @@ const BackgroundImage = createGlobalStyle`
   }
 `;
 
-const useStyles = makeStyles((theme) => ({
-    gridItem: {
-      height: '100%',
-      [theme.breakpoints.up('md')]: {
-        height: '90px',
-      },
-    },
-  }));
 
   const cardStyle = {
     display: 'block',
@@ -118,8 +114,18 @@ let btcbpool = useStatsForPool(btcb);
 let bnbpool = useStatsForPool(bsharebnb);
 let bombpool = useStatsForPool(bombBSHARE);
 
-//reddem
-const {redeem} = useRedeemFromBomb();
+console.log(banks);
+
+//depostmodal boardroom 
+
+const bombFinance = useBombFinance();
+const stakedBalance = useTokenBalance(bombFinance.BSHARE);
+const tokenBalance = useTokenBalance(bombFinance.BSHARE);
+//claim reward of bshare in bomb farms section
+const {onReward} = useHarvestFromBoardroom();
+
+//redeem bomb
+const { onWithdraw } = useRedeemFromBomb();
 
 
 const stakedBalanceBTCB = useStakedBalance(banks[2].contract,banks[2].poolId);
@@ -183,9 +189,40 @@ const sharePriceInDollars = useMemo(
 );
 
 
+//withdraw and deposit(stake)from boardroom
+const {onStake} = useStakeToBoardroom();
+
+
+
+
+const [onPresentDeposit, onDismissDeposit] = useModal(
+  <DepositModal
+    max={tokenBalance}
+    onConfirm={(value) => {
+      onStake(value);
+      onDismissDeposit();
+    }}
+    tokenName={'BSHARE'}
+  />,
+);
+
+const [onPresentWithdraw, onDismissWithdraw] = useModal(
+  <WithdrawModal
+    max={stakedBalance}
+    onConfirm={(value) => {
+      onWithdraw(value);
+      onDismissWithdraw();
+    }}
+    tokenName={'BSHARE'}
+  />,
+);
+
+
     return (
     <Page>
         <BackgroundImage />
+
+    
 <Grid container spacing={3}>
     <Grid item xs={9}>
           <Card sx={{ maxWidth: 345 }}>
@@ -256,6 +293,10 @@ Daily returns = ${bombpool?.dailyAPR}
             <UnlockWallet />
         )}
        </Typography>
+       <Typography> <Button onClick={onPresentDeposit}>deposit Button</Button></Typography>
+  <Typography> <Button onClick={onPresentWithdraw}>withdrawButton</Button></Typography>
+  <Typography> <Button onClick={onReward}> Claim Reward</Button></Typography>
+               
 </Card>
 
   </Grid>
@@ -307,6 +348,9 @@ Daily returns = ${bombpool?.dailyAPR}
            {getDisplayBalance(earningsBTCB)} 
                in dollars {`≈ $${earnedInDollarsBTCB}`}
                </Typography>  
+               
+               <Typography><Button onClick={onReward}>Claim Reward of bshare</Button></Typography>
+
                 {/* <Typography>earned total <Harvest bank={bank} /> </Typography> */}
                 <Typography>BSHARE-BNB</Typography>
                   <Typography>  TVL ${bnbpool?.TVL}</Typography>
@@ -323,7 +367,7 @@ Daily returns = ${bombpool?.dailyAPR}
            {getDisplayBalance(earningsBNB)} 
                in dollars {`≈ $${earnedInDollarsBNB}`}
                </Typography>  
-     
+               <Typography><Button onClick={onReward}>Claim Reward of bshare</Button></Typography>
       </CardContent>
 
     </Card>
@@ -345,13 +389,23 @@ Daily returns = ${bombpool?.dailyAPR}
      Last-Hour TWAP Price
                Bonds
 
-               <Button onClick = {redeem} > redeem</Button>
+               <Button onClick = {onWithdraw} > redeem bomb</Button>
+
+                 {!isBondPurchasable ? 'BOMB is over peg' : 'avaialable for purcahse'}
+                
+                 {!isBondPurchasable ? (
+         <Button disabled>Purchase </Button>
+      ) : (
+        <Button onClick={handleBuyBonds}>Purchase</Button>
+      )}
+  
+               
         </Typography>
 
       </CardContent>
    
     </Card>
-
+   
   </Grid>
 </Grid>
 
