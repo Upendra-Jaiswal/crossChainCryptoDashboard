@@ -4,18 +4,22 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Box, Card, CardContent, Button, Typography, Grid } from '@material-ui/core';
  import CardMedia from '@mui/material/CardMedia';
 import Page from '../../components/Page';
-// for bomb price share price
-import useBombStats from '../../hooks/useBombStats';
+
 import useBtcStats from '../../hooks/useBtcStats';
-import useShareStats from '../../hooks/usebShareStats';
+
 import {roundAndFormatNumber} from '../../0x';
 
 //nextand current epoch
 import ProgressCountdown from './components/ProgressCountdown';
 import moment from 'moment';
 
-//current bond price
+//current bond price & supply of BOND 
 import useBondStats from '../../hooks/useBondStats';
+//supply of BSHARE 
+import useShareStats from '../../hooks/usebShareStats';
+//supply of bomb stat & for bomb price share price
+import useBombStats from '../../hooks/useBombStats';
+
 //last hour twap price
 import useCashPriceInLastTWAP from '../../hooks/useCashPriceInLastTWAP';
 
@@ -64,6 +68,10 @@ import  isBondPurchasable from '../Bond/Bond';
 
 
 
+  
+
+
+
 const BackgroundImage = createGlobalStyle`
   body {
     background: url(${HomeImage}) repeat !important;
@@ -83,6 +91,10 @@ const BackgroundImage = createGlobalStyle`
 
 const Dashboard = () => {
 
+ // const [totalsupply] = getTotalSuppliedBtcb();
+
+  
+
     const { account } = useWallet();
     const currentEpoch = useCurrentEpoch();
     const cashStat = useCashPriceInEstimatedTWAP();
@@ -90,13 +102,16 @@ const Dashboard = () => {
     const scalingFactor = useMemo(() => (cashStat ? Number(cashStat.priceInDollars).toFixed(4) : null), [cashStat]);
     const { to } = useTreasuryAllocationTimes();
 
-  // for share price bomb price
+  // for price and supply
   const bombStats = useBombStats();
   const btcStats = useBtcStats();
   const shareStats = useShareStats();
-
-  //current bond price
   const bondStat = useBondStats();
+
+
+
+
+
   //last hour twap price
 
   const cashPrice = useCashPriceInLastTWAP();
@@ -114,7 +129,7 @@ let btcbpool = useStatsForPool(btcb);
 let bnbpool = useStatsForPool(bsharebnb);
 let bombpool = useStatsForPool(bombBSHARE);
 
-console.log(banks);
+//console.log(banks);
 
 //depostmodal boardroom 
 
@@ -217,6 +232,8 @@ const [onPresentWithdraw, onDismissWithdraw] = useModal(
   />,
 );
 
+console.log(bondStat);
+
 
     return (
     <Page>
@@ -240,9 +257,19 @@ const [onPresentWithdraw, onDismissWithdraw] = useModal(
               <div className="navTokenIcon btc"></div>{' '}
               <div className="navTokenPrice"> bond price ${roundAndFormatNumber(Number(btcPriceInDollars), 2)}</div>
         </Typography>
+
+
         <Typography variant="body2" color="text.secondary">
-     
-        </Typography>
+     <Typography> bond total supply{Number(bondStat?.totalSupply).toFixed(4) || '-'}</Typography>
+      <Typography> bshare total supply {Number(shareStats?.totalSupply).toFixed(4) || '-'}</Typography>
+             <Typography> bomb total supply {Number(bombStats?.totalSupply).toFixed(4) || '-'}</Typography>
+            
+             <Typography> bond current supply{Number(bondStat?.circulatingSupply).toFixed(4) || '-'}</Typography>
+      <Typography> bshare current supply {Number(shareStats?.circulatingSupply).toFixed(4) || '-'}</Typography>
+             <Typography> bomb current supply {Number(bombStats?.circulatingSupply).toFixed(4) || '-'}</Typography>
+
+      
+       </Typography>
       </CardContent>
    
     </Card>
@@ -399,6 +426,7 @@ Daily returns = ${bombpool?.dailyAPR}
         <Button onClick={handleBuyBonds}>Purchase</Button>
       )}
   
+  {/* <Typography>here is {totalsupply}</Typography> */}
                
         </Typography>
 
