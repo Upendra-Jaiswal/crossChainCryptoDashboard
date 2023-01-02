@@ -1,7 +1,7 @@
-import React, {useMemo} from 'react';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
-import {Box, Button, Card, CardContent, Typography} from '@material-ui/core';
+import { Box, Button, Card, CardContent, Typography } from '@material-ui/core';
 
 import TokenSymbol from '../../../components/TokenSymbol';
 import Label from '../../../components/Label';
@@ -13,11 +13,11 @@ import ProgressCountdown from './ProgressCountdown';
 import useHarvestFromBoardroom from '../../../hooks/useHarvestFromBoardroom';
 import useEarningsOnBoardroom from '../../../hooks/useEarningsOnBoardroom';
 import useBombStats from '../../../hooks/useBombStats';
-import {getDisplayBalance} from '../../../utils/formatBalance';
+import { getDisplayBalance } from '../../../utils/formatBalance';
 
 const Harvest: React.FC = () => {
   const bombStats = useBombStats();
-  const {onReward} = useHarvestFromBoardroom();
+  const { onReward } = useHarvestFromBoardroom();
   const earnings = useEarningsOnBoardroom();
   const canClaimReward = useClaimRewardCheck();
 
@@ -28,10 +28,13 @@ const Harvest: React.FC = () => {
 
   const earnedInDollars = (Number(tokenPriceInDollars) * Number(getDisplayBalance(earnings))).toFixed(2);
 
-  const {from, to} = useClaimRewardTimerBoardroom();
+  const { from, to } = useClaimRewardTimerBoardroom();
 
   return (
-    <Typography>Earned  <Value value={getDisplayBalance(earnings)} /><Label text={`≈ $${earnedInDollars}`} variant="yellow" /></Typography>
+    <Typography>
+      Earned <Value value={getDisplayBalance(earnings)} />
+      <Label text={`≈ $${earnedInDollars}`} variant="yellow" />
+    </Typography>
     // <Box>
     //   <Card>
     //     <CardContent>

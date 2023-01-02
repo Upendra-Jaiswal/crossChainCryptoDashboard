@@ -1,23 +1,23 @@
-import React, {useMemo} from 'react';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
-import {Box, Button, Card, CardContent, Typography} from '@material-ui/core';
+import { Box, Button, Card, CardContent, Typography } from '@material-ui/core';
 
 // import Button from '../../../components/Button';
 // import Card from '../../../components/Card';
 // import CardContent from '../../../components/CardContent';
 import CardIcon from '../../../components/CardIcon';
-import {AddIcon, RemoveIcon} from '../../../components/icons';
+import { AddIcon, RemoveIcon } from '../../../components/icons';
 import IconButton from '../../../components/IconButton';
 import Label from '../../../components/Label';
 import Value from '../../../components/Value';
 
-import useApprove, {ApprovalState} from '../../../hooks/useApprove';
+import useApprove, { ApprovalState } from '../../../hooks/useApprove';
 import useModal from '../../../hooks/useModal';
 import useTokenBalance from '../../../hooks/useTokenBalance';
 import useWithdrawCheck from '../../../hooks/boardroom/useWithdrawCheck';
 
-import {getDisplayBalance} from '../../../utils/formatBalance';
+import { getDisplayBalance } from '../../../utils/formatBalance';
 
 import DepositModal from './DepositModal';
 import WithdrawModal from './WithdrawModal';
@@ -36,7 +36,7 @@ const Stake: React.FC = () => {
 
   const tokenBalance = useTokenBalance(bombFinance.BSHARE);
   const stakedBalance = useStakedBalanceOnBoardroom();
-  const {from, to} = useUnstakeTimerBoardroom();
+  const { from, to } = useUnstakeTimerBoardroom();
 
   const stakedTokenPriceInDollars = useStakedTokenPriceInDollars('BSHARE', bombFinance.BSHARE);
   const tokenPriceInDollars = useMemo(
@@ -48,8 +48,8 @@ const Stake: React.FC = () => {
   );
   // const isOldBoardroomMember = boardroomVersion !== 'latest';
 
-  const {onStake} = useStakeToBoardroom();
-  const {onWithdraw} = useWithdrawFromBoardroom();
+  const { onStake } = useStakeToBoardroom();
+  const { onWithdraw } = useWithdrawFromBoardroom();
   const canWithdrawFromBoardroom = useWithdrawCheck();
 
   const [onPresentDeposit, onDismissDeposit] = useModal(
@@ -75,9 +75,11 @@ const Stake: React.FC = () => {
   );
 
   return (
-<div>
-    <Typography>your stake   <Value value= {getDisplayBalance(stakedBalance)} /> <Label text={`≈ $${tokenPriceInDollars}`} variant="yellow" /></Typography>
-   
+    <div>
+      <Typography>
+        your stake <Value value={getDisplayBalance(stakedBalance)} />{' '}
+        <Label text={`≈ $${tokenPriceInDollars}`} variant="yellow" />
+      </Typography>
     </div>
 
     // <Box>

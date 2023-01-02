@@ -1,13 +1,13 @@
-import React, {useCallback, useMemo, useState} from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
-import {Button} from '@material-ui/core';
-import Modal, {ModalProps} from '../../../components/Modal';
+import { Button } from '@material-ui/core';
+import Modal, { ModalProps } from '../../../components/Modal';
 import ModalActions from '../../../components/ModalActions';
 import ModalTitle from '../../../components/ModalTitle';
 import TokenInput from '../../../components/TokenInput';
 
-import {getFullDisplayBalance} from '../../../utils/formatBalance';
-import {BigNumber} from 'ethers';
+import { getFullDisplayBalance } from '../../../utils/formatBalance';
+import { BigNumber } from 'ethers';
 
 interface WithdrawModalProps extends ModalProps {
   max: BigNumber;
@@ -15,7 +15,7 @@ interface WithdrawModalProps extends ModalProps {
   tokenName?: string;
 }
 
-const WithdrawModal: React.FC<WithdrawModalProps> = ({onConfirm, onDismiss, max, tokenName = ''}) => {
+const WithdrawModal: React.FC<WithdrawModalProps> = ({ onConfirm, onDismiss, max, tokenName = '' }) => {
   const [val, setVal] = useState('');
 
   const fullBalance = useMemo(() => {

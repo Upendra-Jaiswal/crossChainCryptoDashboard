@@ -1,14 +1,14 @@
-import React, {useCallback, useMemo, useState} from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
-import {Button} from '@material-ui/core';
+import { Button } from '@material-ui/core';
 // import Button from '../../../components/Button'
-import Modal, {ModalProps} from '../../../components/Modal';
+import Modal, { ModalProps } from '../../../components/Modal';
 import ModalActions from '../../../components/ModalActions';
 import ModalTitle from '../../../components/ModalTitle';
 import TokenInput from '../../../components/TokenInput';
 
-import {getFullDisplayBalance} from '../../../utils/formatBalance';
-import {BigNumber} from 'ethers';
+import { getFullDisplayBalance } from '../../../utils/formatBalance';
+import { BigNumber } from 'ethers';
 
 interface DepositModalProps extends ModalProps {
   max: BigNumber;
@@ -16,7 +16,7 @@ interface DepositModalProps extends ModalProps {
   tokenName?: string;
 }
 
-const DepositModal: React.FC<DepositModalProps> = ({max, onConfirm, onDismiss, tokenName = ''}) => {
+const DepositModal: React.FC<DepositModalProps> = ({ max, onConfirm, onDismiss, tokenName = '' }) => {
   const [val, setVal] = useState('');
 
   const fullBalance = useMemo(() => {

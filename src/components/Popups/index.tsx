@@ -1,14 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
-import {useActivePopups} from '../../state/application/hooks';
+import { useActivePopups } from '../../state/application/hooks';
 import PopupItem from './PopupItem';
 
-const MobilePopupWrapper = styled.div<{height: string | number}>`
+const MobilePopupWrapper = styled.div<{ height: string | number }>`
   position: relative;
   max-width: 100%;
-  height: ${({height}) => height};
-  margin: ${({height}) => (height ? '0 auto;' : 0)};
-  margin-bottom: ${({height}) => (height ? '20px' : 0)}};
+  height: ${({ height }) => height};
+  margin: ${({ height }) => (height ? '0 auto;' : 0)};
+  margin-bottom: ${({ height }) => (height ? '20px' : 0)}};
 
   display: none;
   @media (max-width: 768px) {

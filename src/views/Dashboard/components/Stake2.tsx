@@ -1,19 +1,19 @@
-import React, {useMemo, useContext} from 'react';
+import React, { useMemo, useContext } from 'react';
 import styled from 'styled-components';
 
 // import Button from '../../../components/Button';
-import {Button, Card, CardContent, Typography} from '@material-ui/core';
+import { Button, Card, CardContent, Typography } from '@material-ui/core';
 // import Card from '../../../components/Card';
 // import CardContent from '../../../components/CardContent';
 import CardIcon from '../../../components/CardIcon';
-import {AddIcon, RemoveIcon} from '../../../components/icons';
+import { AddIcon, RemoveIcon } from '../../../components/icons';
 import FlashOnIcon from '@material-ui/icons/FlashOn';
 import IconButton from '../../../components/IconButton';
 //import Label from '../../../components/Label';
 import Value from '../../../components/Value';
-import {ThemeContext} from 'styled-components';
+import { ThemeContext } from 'styled-components';
 
-import useApprove, {ApprovalState} from '../../../hooks/useApprove';
+import useApprove, { ApprovalState } from '../../../hooks/useApprove';
 import useModal from '../../../hooks/useModal';
 import useStake from '../../../hooks/useStake';
 import useZap from '../../../hooks/useZap';
@@ -22,13 +22,13 @@ import useStakedTokenPriceInDollars from '../../../hooks/useStakedTokenPriceInDo
 import useTokenBalance from '../../../hooks/useTokenBalance';
 import useWithdraw from '../../../hooks/useWithdraw';
 
-import {getDisplayBalance} from '../../../utils/formatBalance';
+import { getDisplayBalance } from '../../../utils/formatBalance';
 
 import DepositModal from './DepositModal';
 import WithdrawModal from './WithdrawModal';
 import ZapModal from './ZapModal';
 import TokenSymbol from '../../../components/TokenSymbol';
-import {Bank} from '../../../bomb-finance';
+import { Bank } from '../../../bomb-finance';
 
 interface StakeProps {
   bank: Bank;
@@ -93,10 +93,10 @@ const Stake2: React.FC<StakeProps> = ({ bank }) => {
 
   return (
     <>
-    <Typography>value staked by bank  <Value value={getDisplayBalance(stakedBalance, bank.depositToken.decimal)} /></Typography>
-    <Typography style={{textTransform: 'uppercase', color: '#fffff'}}>
-                      {`≈ $${earnedInDollars}`}
-            </Typography>
+      <Typography>
+        value staked by bank <Value value={getDisplayBalance(stakedBalance, bank.depositToken.decimal)} />
+      </Typography>
+      <Typography style={{ textTransform: 'uppercase', color: '#fffff' }}>{`≈ $${earnedInDollars}`}</Typography>
     </>
     // <Card>
     //   <CardContent>
@@ -107,7 +107,6 @@ const Stake2: React.FC<StakeProps> = ({ bank }) => {
     //         </CardIcon>
     //         <Value value={getDisplayBalance(stakedBalance, bank.depositToken.decimal)} />
 
-            
     //         {/* <Label text={`≈ $${earnedInDollars}`} /> */}
 
     //              <Typography style={{textTransform: 'uppercase', color: '#fffff'}}>
