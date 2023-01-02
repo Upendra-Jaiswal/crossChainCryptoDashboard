@@ -63,6 +63,7 @@ const SupplyBomb: React.FC = () => {
   const { onStake } = useSupplyToBomb();
   const { onWithdraw } = useRedeemFromBomb();
 
+
   const [onPresentDeposit, onDismissDeposit] = useModal(
     <DepositModal
       max={tokenBalance}
@@ -121,7 +122,11 @@ const SupplyBomb: React.FC = () => {
               <Label text={`≈ $${tokenPriceInDollars}`} variant="yellow" />
             </StyledCardHeader>
             <StyledCardActions>
-              {approveStatus !== ApprovalState.APPROVED ? (
+              <Button onClick={onPresentDeposit}>deposit</Button>
+
+              
+
+              { approveStatus !== ApprovalState.APPROVED ? (
                 <Button
                   disabled={approveStatus !== ApprovalState.NOT_APPROVED}
                   className={approveStatus === ApprovalState.NOT_APPROVED ? 'shinyButton' : 'shinyButtonDisabled'}

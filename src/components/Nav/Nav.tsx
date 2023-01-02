@@ -165,11 +165,12 @@ const Nav = () => {
               <Link to="/dashboard" className={'navLink ' + classes.link}>
                 Dashboard
               </Link>
+              <Link to="/bank" className={'navLink ' + classes.link}>
+               Bank
+              </Link>
 
 
-              
- 
-              
+
 
               {/* <Link color="textPrimary" to="/sbs" className={classes.link}>
                 SBS

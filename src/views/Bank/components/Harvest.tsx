@@ -32,6 +32,7 @@ const Harvest: React.FC<HarvestProps> = ({bank}) => {
     () => (tokenStats ? Number(tokenStats.priceInDollars).toFixed(2) : null),
     [tokenStats],
   );
+  console.log(onReward);
   const earnedInDollars = (Number(tokenPriceInDollars) * Number(getDisplayBalance(earnings))).toFixed(2);
   return (
     <Card>

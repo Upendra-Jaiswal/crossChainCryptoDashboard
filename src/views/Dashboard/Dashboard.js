@@ -1,7 +1,12 @@
-import React, { useMemo,useEffect } from 'react';
-import { useWallet } from 'use-wallet';
-import { makeStyles } from '@material-ui/core/styles';
-import { Box, Card, CardContent, Button, Typography, Grid } from '@material-ui/core';
+import React, { useMemo,useEffect,useState } from 'react';
+import 'bootstrap/dist/css/bootstrap.css';
+import Col from 'react-bootstrap/Col';
+import Row from 'react-bootstrap/Row';
+import { useWallet } from 'use-wallet'
+import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
+import useHarvest from '../../hooks/useHarvest';
+
+import { Card, CardContent,CardHeader,  Button, Typography, Grid } from '@material-ui/core';
  import CardMedia from '@mui/material/CardMedia';
 import Page from '../../components/Page';
 
@@ -29,11 +34,8 @@ import useCashPriceInLastTWAP from '../../hooks/useCashPriceInLastTWAP';
 import Stake from './components/Stake';
 import UnlockWallet from '../../components/UnlockWallet';
 import Harvest from './components/Harvest';
-import useStakedBalanceOnBoardroom from '../../hooks/useStakedBalanceOnBoardroom';
 import { getDisplayBalance } from '../../utils/formatBalance';
 import useCurrentEpoch from '../../hooks/useCurrentEpoch';
-import useFetchBoardroomAPR from '../../hooks/useFetchBoardroomAPR';
-
 import useCashPriceInEstimatedTWAP from '../../hooks/useCashPriceInEstimatedTWAP';
 import useTreasuryAllocationTimes from '../../hooks/useTreasuryAllocationTimes';
 import useTotalStakedOnBoardroom from '../../hooks/useTotalStakedOnBoardroom';
@@ -46,14 +48,11 @@ import useBanks from '../../hooks/useBanks';
 import Value from '../../components/Value';
 import useStakedBalance from '../../hooks/useStakedBalance';
 import useStakedTokenPriceInDollars from '../../hooks/useStakedTokenPriceInDollars';
-
 //btcb earning
 import useEarnings from '../../hooks/useEarnings';
-
 //redeembomb
 //import SupplyBomb from '../Supply/components/SupplyBomb';
 import useRedeemFromBomb from '../../hooks/useRedeemFromBomb';
-
 //depositmodal for broadroom
 import DepositModal from '../Boardroom/components/DepositModal';
 import useTokenBalance from '../../hooks/useTokenBalance';
@@ -66,11 +65,10 @@ import useHarvestFromBoardroom from '../../hooks/useHarvestFromBoardroom';
 import handleBuyBonds from  '../Bond/Bond'
 import  isBondPurchasable from '../Bond/Bond';
 
-
-
+import { ThemeProvider } from '@mui/styles'
+import blue from '@mui/material/colors/blue';
+import DataTable from "react-data-table-component";
   
-
-
 
 const BackgroundImage = createGlobalStyle`
   body {
@@ -80,21 +78,14 @@ const BackgroundImage = createGlobalStyle`
   }
 `;
 
-
   const cardStyle = {
     display: 'block',
-    width: '54vw',
+    stylbackgroundColor: 'rgba(255, 255, 255, 0.3)',
     transitionDuration: '0.3s',
-    height: '20vw',
-    backgroundColor: "#black"
+  
 }
 
 const Dashboard = () => {
-
- // const [totalsupply] = getTotalSuppliedBtcb();
-
-  
-
     const { account } = useWallet();
     const currentEpoch = useCurrentEpoch();
     const cashStat = useCashPriceInEstimatedTWAP();
@@ -108,12 +99,7 @@ const Dashboard = () => {
   const shareStats = useShareStats();
   const bondStat = useBondStats();
 
-
-
-
-
   //last hour twap price
-
   const cashPrice = useCashPriceInLastTWAP();
   const bondScale = (Number(cashPrice) / 100000000000000).toFixed(4); 
 
@@ -129,18 +115,20 @@ let btcbpool = useStatsForPool(btcb);
 let bnbpool = useStatsForPool(bsharebnb);
 let bombpool = useStatsForPool(bombBSHARE);
 
-//console.log(banks);
-
 //depostmodal boardroom 
-
 const bombFinance = useBombFinance();
 const stakedBalance = useTokenBalance(bombFinance.BSHARE);
 const tokenBalance = useTokenBalance(bombFinance.BSHARE);
+ const stakedBalLP = useTokenBalance(bombFinance.BOMBBTCB_LP);
+ const toeknBalLP = useTokenBalance(bombFinance.BOMBBTCB_LP);
+
 //claim reward of bshare in bomb farms section
 const {onReward} = useHarvestFromBoardroom();
 
 //redeem bomb
 const { onWithdraw } = useRedeemFromBomb();
+
+const purchaseBonds = handleBuyBonds();
 
 
 const stakedBalanceBTCB = useStakedBalance(banks[2].contract,banks[2].poolId);
@@ -164,8 +152,6 @@ const earnedInDollarsBNBStacked= (
   Number(tokenPriceInDollarsStackBNB) * Number(getDisplayBalance(stakedBalanceBNB, banks[4].depositToken.decimal))
 ).toFixed(2);
 
-
-
 //EARNED BTCB
 const earningsBTCB = useEarnings(banks[2].contract, banks[2].earnTokenName, banks[2].poolId);
 //earned btcb in dollar
@@ -178,21 +164,16 @@ const tokenPriceInDollarsHarvestBTCB = useMemo(
 );
 const earnedInDollarsBTCB = (Number(tokenPriceInDollarsHarvestBTCB) * Number(getDisplayBalance(earningsBTCB))).toFixed(2);
 
-//earned bnb
-
-//EARNED BTCB
+//EARNED BNB
 const earningsBNB = useEarnings(banks[4].contract, banks[4].earnTokenName, banks[2].poolId);
 //earned btcb in dollar
-
 const tokenStatsBNB = banks[4].earnTokenName === 'BSHARE' ? tShareStats : bombStatsBTCB;
 const tokenPriceInDollarsHarvestBNB = useMemo(
   () => (tokenStatsBNB ? Number(tokenStatsBNB.priceInDollars).toFixed(2) : null),
   [tokenStatsBNB],
 );
 const earnedInDollarsBNB = (Number(tokenPriceInDollarsHarvestBNB) * Number(getDisplayBalance(earningsBTCB))).toFixed(2);
-
-
-    //for  btc price bomb price sgare price
+ //for  btc price bomb price sgare price
 const btcPriceInDollars = useMemo(() => (btcStats ? Number(btcStats).toFixed(2) : null), [btcStats]);
 const bombPriceInDollars = useMemo(
   () => (bombStats ? Number(bombStats.priceInDollars).toFixed(2) : null),
@@ -206,9 +187,6 @@ const sharePriceInDollars = useMemo(
 
 //withdraw and deposit(stake)from boardroom
 const {onStake} = useStakeToBoardroom();
-
-
-
 
 const [onPresentDeposit, onDismissDeposit] = useModal(
   <DepositModal
@@ -231,104 +209,199 @@ const [onPresentWithdraw, onDismissWithdraw] = useModal(
     tokenName={'BSHARE'}
   />,
 );
+const [onPresentDepositLP, onDismissDepositLP] = useModal(
+  <DepositModal
+    max={toeknBalLP}
+    onConfirm={(value) => {
+      onStake(value);
+      onDismissDepositLP();
+    }}
+    tokenName={'BOMBBTCB_LP'}
+  />,
+);
 
-console.log(bondStat);
+const [onPresentWithdrawLP, onDismissWithdrawLP] = useModal(
+  <WithdrawModal
+    max={stakedBalLP}
+    onConfirm={(value) => {
+      onWithdraw(value);
+      onDismissWithdrawLP();
+    }}
+    tokenName={'BOMBBTCB_LP'}
+  />,
+);
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      display: "flex",
+      flexDirection: "column", //change to row for horizontal layout
+      "& .MuiCardHeader-root": {
+        backgroundColor: 'rgba(255, 255, 255, 0.3)'
+      },
+      "& .MuiCardHeader-title": {
+        //could also be placed inside header class
+        backgroundColor: 'rgba(255, 255, 255, 0.1)'
+      },
+      "& .MuiCardHeader-subheader	": {
+        backgroundColor: 'rgba(255, 255, 255, 0.3)'
+      }
+     
+    },
+    header: {},
+    content: {
+      display: "flex",
+      flexWrap: "wrap"
+    }, 
+     gridClassName: {
+      boxShadow: "20px 40px ",
+    },
+    contentItem: {
+      width:"33%"
+      
+    },
+    contentItemBoard: {
+      width:"25%"
+ 
+    },
+    contentBesideSub:{
+      
+      height:"50px",
+      width:"33%",
+      textAlign: "center",
+          },
+       
+    textContent: {
+      fontSize: 18,
+      textAlign: "center",
+   
+    },
+  
+  })
+);
+
+ 
+const [tableData,setTableData] = useState([ 
+  {Currency:"$BOMB", currentsupply :  Number(bombStats?.circulatingSupply).toFixed(4) || '-',totalsupply: Number(bombStats?.totalSupply).toFixed(4) || '-' },
+   {Currency:"$BSHARE", currentsupply :   Number(shareStats?.circulatingSupply).toFixed(4) || '-'  },
+   {Currency:"$BBOND", currentsupply : Number(bondStat?.circulatingSupply).toFixed(4) || '-' },
+]);
+
+useEffect(() => {
+ 
+   setTableData(prevTableData => {
+      const newTableData = [...prevTableData];
+
+       newTableData[0].currentsupply = Number(bombStats?.circulatingSupply).toFixed(4) || '-';
+       newTableData[1].currentsupply = Number(shareStats?.circulatingSupply).toFixed(4) || '-';  
+       newTableData[2].currentsupply = Number(bondStat?.circulatingSupply).toFixed(4) || '-';
+       newTableData[0].totalsupply = Number(bombStats?.totalSupply).toFixed(4) || '-';
+       newTableData[1].totalsupply = Number(shareStats?.totalSupply).toFixed(4) || '-';
+       newTableData[2].totalsupply = Number(bondStat?.totalSupply).toFixed(4) || '-';
+       newTableData[0].price = roundAndFormatNumber(Number(bombPriceInDollars), 2);
+       newTableData[1].price = roundAndFormatNumber(Number(sharePriceInDollars), 2); 
+       newTableData[2].price = roundAndFormatNumber(Number(btcPriceInDollars), 2);
+    
+    return newTableData;
+  });
 
 
+}, [bombStats?.circulatingSupply,shareStats?.circulatingSupply,bondStat?.circulatingSupply,bombStats?.totalSupply,shareStats?.totalSupply,bondStat?.totalSupply,bombPriceInDollars,sharePriceInDollars,btcPriceInDollars]);  // Only re-run the effect when the dependencies change
+
+
+const column = [
+  {name:" ",selector:"Currency"},
+  {name:"currentsupply",selector:"currentsupply"},
+  {name:"totalsupply",selector:"totalsupply"},
+  {name:"price",selector:"price"}
+
+]
+
+const classes = useStyles();
     return (
+
     <Page>
         <BackgroundImage />
 
-    
-<Grid container spacing={3}>
-    <Grid item xs={9}>
-          <Card sx={{ maxWidth: 345 }}>
-      <CardMedia
-        sx={{ height: 140 }}
-        image="/static/images/cards/contemplative-reptile.jpg"
-        title="green iguana"
-      />
-      <CardContent>
-        <Typography gutterBottom variant="h5" component="div">
-        <div className="navTokenIcon bomb"></div>{' '}
-              <div className="navTokenPrice">Bomb price ${roundAndFormatNumber(Number(bombPriceInDollars), 2)}</div>
-              <div className="navTokenIcon bshare"></div>{' '}
-              <div className="navTokenPrice"> share price ${roundAndFormatNumber(Number(sharePriceInDollars), 2)}</div>
-              <div className="navTokenIcon btc"></div>{' '}
-              <div className="navTokenPrice"> bond price ${roundAndFormatNumber(Number(btcPriceInDollars), 2)}</div>
-        </Typography>
-
-
-        <Typography variant="body2" color="text.secondary">
-     <Typography> bond total supply{Number(bondStat?.totalSupply).toFixed(4) || '-'}</Typography>
-      <Typography> bshare total supply {Number(shareStats?.totalSupply).toFixed(4) || '-'}</Typography>
-             <Typography> bomb total supply {Number(bombStats?.totalSupply).toFixed(4) || '-'}</Typography>
-            
-             <Typography> bond current supply{Number(bondStat?.circulatingSupply).toFixed(4) || '-'}</Typography>
-      <Typography> bshare current supply {Number(shareStats?.circulatingSupply).toFixed(4) || '-'}</Typography>
-             <Typography> bomb current supply {Number(bombStats?.circulatingSupply).toFixed(4) || '-'}</Typography>
-
-      
-       </Typography>
-      </CardContent>
-   
-    </Card>
-
-          </Grid>
-          <Grid item xs={3}>
-          <Card sx={{ maxWidth: 345 }}>
-      <CardMedia
-        sx={{ height: 140 }}
-        image="/static/images/cards/contemplative-reptile.jpg"
-        title="green iguana"
-      />
-      <CardContent>
-        <Typography gutterBottom variant="h5" component="div">
-        <Typography>Current Epoch {Number(currentEpoch)}</Typography>
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Next Epoch in
-        <ProgressCountdown base={moment().toDate()} hideBar={true} deadline={to} description="Next Epoch" />
-        </Typography>
-        <Typography> Live TWap  {scalingFactor} BTC</Typography>
-        <Typography> Last hour twap price {bondScale || '-'}</Typography>
-
-      </CardContent>
-   
-    </Card>
-
-          </Grid>
-
-  <Grid item xs={8} >
-
-<Card style={cardStyle}>
-      
+<Grid container spacing={3} style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)' }}>
+    <Grid item xs={12} style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)' }}>
+         <Card style={cardStyle} sx={{ maxWidth: 345 }}>
      
-<Typography>total staked {getDisplayBalance(totalStaked)}</Typography>
-       <Typography>Board room</Typography> 
-       <Typography>
+      <CardContent>
+      
+        <div style={{ display: 'block', padding: 30 }}>
+  <Row>
+    <Col>
+    <DataTable columns={column} data={tableData} />
+     </Col> <Col>
+   
+  </Col> <Col><Row><Row> <Typography>Current Epoch 
+        <br />
+          {Number(currentEpoch)}
+          </Typography></Row> 
+           <Row>
+             <Typography >
+          Next Epoch in
+          <br />
+        <ProgressCountdown base={moment().toDate()} hideBar={true} deadline={to} description="Next Epoch" />
+        </Typography> </Row>
+       <Row>
+        <Typography> Live TWap  {scalingFactor} BTC</Typography>
+        <br />
+        <Typography> Last hour twap price {bondScale || '-'}</Typography></Row>
+        </Row></Col></Row>
+</div>
+ </CardContent></Card> </Grid>
+        
+ <Grid item xs={8} >
+    <Card style={cardStyle}>
+      <Card className={classes.root}>
+        <CardHeader
+          className={classes.header}
+          component={Typography}
+          title={ <Typography>Board room</Typography>}
+          subheader={ 
+            <div className={classes.content} >
+            <div className={`${classes.contentBesideSub}`}> 
+            Stake BSHARE and earn BOMB every epoch
+            </div>
+            <div className={`${classes.contentBesideSub}`}> </div>
+            <div className={`${classes.contentBesideSub}`}> 
+            TVL  ${bombpool?.TVL}
+             </div>
+             </div>} />
+        <CardContent className={classes.content}>
+               <div className={`${classes.contentItemBoard} ${classes.textContent}`}> 
+                    Daily returns = ${bombpool?.dailyAPR}
+                    </div>
 
-TVL = ${bombpool?.TVL}
-Daily returns = ${bombpool?.dailyAPR}
-       {!!account ? (
-            <Box mt={4}>
+           
+           <div className={`${classes.contentItemBoard} ${classes.textContent}`}> 
+           {!!account ? (  <Stake />
+            ) : (
+                       <UnlockWallet />
+                   )}
+                              </div>
+                               <div className={`${classes.contentItemBoard} ${classes.textContent}`}> 
+                               {!!account ? (  <Harvest />) : (
+                       <UnlockWallet />
+                   )}
+                               </div>
+  
+              <div className={`${classes.contentItemBoard} ${classes.textContent}`}>    
 
-                    <Stake />
-                    <Harvest />
-            </Box>
-        ) : (
-            <UnlockWallet />
-        )}
-       </Typography>
-       <Typography> <Button onClick={onPresentDeposit}>deposit Button</Button></Typography>
-  <Typography> <Button onClick={onPresentWithdraw}>withdrawButton</Button></Typography>
-  <Typography> <Button onClick={onReward}> Claim Reward</Button></Typography>
-               
+             Total Staked:  {getDisplayBalance(totalStaked)}
+          <Typography> <Button onClick={onPresentDeposit}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}>deposit Button</Button></Typography>
+          <br />
+  <Typography> <Button onClick={onPresentWithdraw}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}>withdrawButton</Button></Typography><br/>
+  <Typography> <Button onClick={onReward}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}> Claim Reward</Button></Typography>
+ </div>
+   </CardContent> 
+      </Card>
 </Card>
 
   </Grid>
-  
-
+ 
   <Grid item xs={4} >
  <Card sx={{ maxWidth: 345 }}>
       <CardMedia
@@ -338,7 +411,7 @@ Daily returns = ${bombpool?.dailyAPR}
       />
      <CardContent>
         <Typography gutterBottom variant="h5" component="div">
-        Lizards
+    
         </Typography>
         <Typography variant="body2" color="text.secondary">
           Advertisement
@@ -346,105 +419,137 @@ Daily returns = ${bombpool?.dailyAPR}
       </CardContent>
 
     </Card>
-
-  </Grid> <Grid item xs={12} >
+  </Grid>
+  
+   <Grid item xs={12} >
  <Card sx={{ maxWidth: 345 }}>
-      <CardMedia
-        sx={{ height: 140 }}
-        image="/static/images/cards/contemplative-reptile.jpg"
-        title="green iguana"
-      />
-      <CardContent>
-        <Typography gutterBottom variant="h5" component="div">
-         
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Bomb farms
-        </Typography>
-    
-           <Typography>Bomb-BTCB</Typography>
-                  <Typography>  TVL ${btcbpool?.TVL}</Typography>
-        <Typography>Daily APR</Typography>
-                <Typography>{btcbpool?.dailyAPR}%</Typography>
-                <Typography>your stake of btcb
+           
+<Card className={classes.root}>
+        <CardHeader
+          className={classes.header}
+          component={Typography}
+          title={ <Typography>BOMB FARMS</Typography>}
+          subheader={ 
+            <div className={classes.content} >
+            <div className={`${classes.contentBesideSub}`}> 
+            Stake your LP tokens in our farms to start earning $BSHARE
+            </div>
+            <div className={`${classes.contentBesideSub}`}> </div>
+            <div className={`${classes.contentBesideSub}`}></div>
+             </div>
+            }
+        />
+ 
+        <CardHeader
+          className={classes.header}
+          component={Typography}
+          subheader={ 
+            <div className={classes.content} >
+            <div className={`${classes.contentBesideSub}`}> 
+            BOMB BTC-B 
+            </div>
+            <div className={`${classes.contentBesideSub}`}> </div>
+            <div className={`${classes.contentBesideSub}`}> <Typography>  TVL ${btcbpool?.TVL}</Typography></div>
+             </div>} />
+           <CardContent className={classes.content}>
+            <div className={`${classes.contentItem} ${classes.textContent}`}> 
+                Daily returns   <Typography>{btcbpool?.dailyAPR}%</Typography>
+              </div>
+              <div className={`${classes.contentItem} ${classes.textContent}`}> 
+              {!!account ? (
+                  <Row><Col><Typography>Your Stake
                 <Value value={getDisplayBalance(stakedBalanceBTCB, banks[2].depositToken.decimal)} /> </Typography>
                 <Typography>IN DOLLARS  {`≈ $${earnedInDollarsBTCBStacked}`}</Typography>
-
-                <Typography>earned  IN BTCB Harvest</Typography>
+                 </Col>
+                  <Col> <Typography>Earned</Typography>
         <Typography>     
-           {getDisplayBalance(earningsBTCB)} 
-               in dollars {`≈ $${earnedInDollarsBTCB}`}
-               </Typography>  
-               
-               <Typography><Button onClick={onReward}>Claim Reward of bshare</Button></Typography>
-
-                {/* <Typography>earned total <Harvest bank={bank} /> </Typography> */}
-                <Typography>BSHARE-BNB</Typography>
-                  <Typography>  TVL ${bnbpool?.TVL}</Typography>
-        <Typography>Daily APR</Typography>
-                <Typography>{bnbpool?.dailyAPR}%</Typography>  
-                <Typography>your stake of BNB
-                 </Typography>  
-                <Typography> 
-               <Value value={getDisplayBalance(stakedBalanceBNB, banks[4].depositToken.decimal)} /> 
-                  {`≈ $${earnedInDollarsBNBStacked}`}
-                </Typography> 
-                <Typography>earned Harvest IN BNB</Typography>
+        <Value value={getDisplayBalance(earningsBTCB)}/> </Typography>
+           <Typography>  {`≈ $${earnedInDollarsBTCB}`}
+               </Typography>
+                 </Col></Row>
+                  ) : ( <UnlockWallet />)}
+           </div>
+  <div className={`${classes.contentItem} ${classes.textContent}`}>    
+     <Row>
+      <Col>   <Typography> <Button onClick={onPresentDepositLP}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}>Deposit</Button></Typography></Col> 
+      <Col>   <Typography> <Button onClick={onPresentWithdrawLP}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}>Withdraw</Button></Typography></Col> 
+      <Col>   <Button onClick={onReward}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}>Claim Rewards</Button></Col> 
+  </Row> </div> </CardContent>
+        <CardHeader
+          className={classes.header}
+          component={Typography}
+          subheader={ 
+            <div className={classes.content} >
+            <div className={`${classes.contentBesideSub}`}>  BSHARE-BNB </div>
+            <div className={`${classes.contentBesideSub}`}> </div>
+            <div className={`${classes.contentBesideSub}`}>   
+                  TVL ${bnbpool?.TVL}</div>
+             </div>} />
+            <CardContent className={classes.content}>
+            <div className={`${classes.contentItem} ${classes.textContent}`}> 
+              Daily returns   {bnbpool?.dailyAPR}%
+              </div>
+              <div className={`${classes.contentItem} ${classes.textContent}`}> 
+              {!!account ? (
+           <Row> <Col> <Typography> Your stake  <Value value={getDisplayBalance(stakedBalanceBNB, banks[4].depositToken.decimal)} /> 
+              {`≈ $${earnedInDollarsBNBStacked}`}
+                </Typography> </Col>
+                <Col>
+                <Typography>Earned</Typography>
    <Typography>     
-           {getDisplayBalance(earningsBNB)} 
-               in dollars {`≈ $${earnedInDollarsBNB}`}
-               </Typography>  
-               <Typography><Button onClick={onReward}>Claim Reward of bshare</Button></Typography>
-      </CardContent>
+   <Value value= {getDisplayBalance(earningsBNB)} />
+              {`≈ $${earnedInDollarsBNB}`}
+             </Typography>
+                 </Col>  </Row> ) : (<UnlockWallet /> )} </div>
 
-    </Card>
-
-  </Grid> <Grid item xs={12} >
- <Card sx={{ maxWidth: 345 }}>
-      <CardMedia
-        sx={{ height: 140 }}
-        image="/static/images/cards/contemplative-reptile.jpg"
-        title="green iguana"
-      />
-      <CardContent>
-        <Typography gutterBottom variant="h5" component="div">
-         Bomb
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-      Current price  {Number(bondStat?.tokenInFtm).toFixed(4) || '-'}
-
-     Last-Hour TWAP Price
-               Bonds
-
-               <Button onClick = {onWithdraw} > redeem bomb</Button>
-
-                 {!isBondPurchasable ? 'BOMB is over peg' : 'avaialable for purcahse'}
-                
-                 {!isBondPurchasable ? (
-         <Button disabled>Purchase </Button>
-      ) : (
-        <Button onClick={handleBuyBonds}>Purchase</Button>
-      )}
+ <div className={`${classes.contentItem} ${classes.textContent}`}>    
+    <Row>
+      <Col><Typography> <Button onClick={onPresentDepositLP}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}>Deposit</Button></Typography></Col> 
+      <Col><Typography> <Button onClick={onPresentWithdrawLP}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}>Withdraw</Button></Typography></Col> 
+      <Col><Button onClick={onReward}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}>Claim Reward of bshare</Button></Col> 
+  </Row> </div> </CardContent></Card></Card></Grid>
   
-  {/* <Typography>here is {totalsupply}</Typography> */}
-               
-        </Typography>
 
-      </CardContent>
+
+  <Grid item xs={12} >
+    <Card style={cardStyle}>
+       <Card className={classes.root}>
+        <CardHeader
+          className={classes.header}
+          component={Typography}
+          title={ <Typography>BONDS</Typography>}
+          subheader={ 
+            <div className={classes.content} >
+            <div className={`${classes.contentBesideSub}`}> 
+            BBONDS can only be purchased only on contraction period, when TWAP of BOMB is below 1
+            </div>
+            <div className={`${classes.contentBesideSub}`}> </div>
+            <div className={`${classes.contentBesideSub}`}>  </div>
+             </div>}/>
    
-    </Card>
-   
-  </Grid>
-</Grid>
-
-
-        </Page>
-
-    );
-  };
-
-
-
-
-
+        <CardContent className={classes.content}>
+             <div className={`${classes.contentItem} ${classes.textContent}`}> 
+                  Current price  {Number(bondStat?.tokenInFtm).toFixed(4) || '-'}
+              </div>
+              <div className={`${classes.contentItem} ${classes.textContent}`}> 
+              </div>
+               <div className={`${classes.contentItem} ${classes.textContent}`}>    
+       <Row>
+         <Row>
+            <Col>
+              {!isBondPurchasable ? 'BOMB is over peg' : 'avaialable for purcahse'}
+             </Col>
+              <Col>  {!isBondPurchasable ? (
+                    <Button disabled>Purchase </Button>
+                       ) : (
+                         <Button onClick={purchaseBonds}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}>Purchase</Button>
+                         )}    </Col> </Row>
+          <Row>
+             <Col>Redeem BOMB </Col>
+               <Col> <Button onClick = {onWithdraw}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }} > redeem bomb</Button></Col></Row></Row>
+             </div> </CardContent> </Card></Card> </Grid>
+    </Grid>
+ </Page>
+ );
+};
 export default Dashboard;

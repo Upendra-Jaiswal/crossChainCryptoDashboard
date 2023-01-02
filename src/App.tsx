@@ -20,10 +20,12 @@ import useChainId from './hooks/useChainId';
 import {RefreshContextProvider} from './contexts/RefreshContext';
 
 const Home = lazy(() => import('./views/Home'));
+const Bank = lazy(() => import('./views/Bank'));
 const Farm = lazy(() => import('./views/Farm'));
 const Boardroom = lazy(() => import('./views/Boardroom'));
 const Bond = lazy(() => import('./views/Bond'));
 const Dashboard = lazy(() => import('./views/Dashboard'));
+const Testing = lazy(() => import('./views/Dashboard/testing'));
 const Xbomb = lazy(() => import('./views/Stake'));
 const Supply = lazy(() => import('./views/Supply'));
 // const SBS = lazy(() => import('./views/Sbs'));
@@ -53,6 +55,9 @@ const App: React.FC = () => {
             <Route exact path="/">
               <Home />
             </Route>
+             <Route path="/bank">
+              <Bank />
+            </Route>
             <Route path="/farm">
               <Farm />
             </Route>
@@ -64,6 +69,9 @@ const App: React.FC = () => {
             </Route>
             <Route path="/dashboard">
               <Dashboard />
+              </Route>
+              <Route path="/testing">
+              <Testing />
               </Route>
             <Route path="/xbomb">
               <Xbomb />

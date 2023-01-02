@@ -15,6 +15,7 @@ import useBanks from '../../hooks/useBanks';
 import { Helmet } from 'react-helmet';
 
 import HomeImage from '../../assets/img/background.jpg';
+import Dashboard from '../Dashboard';
 const BackgroundImage = createGlobalStyle`
   body {
     background: url(${HomeImage}) repeat !important;
@@ -127,6 +128,7 @@ const Farm = () => {
         <Route path={`${path}/:bankId`}>
           <BackgroundImage />
           <Bank />
+          <Dashboard />
         </Route>
       </Page>
     </Switch>

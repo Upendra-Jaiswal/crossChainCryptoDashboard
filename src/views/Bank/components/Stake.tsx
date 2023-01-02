@@ -35,7 +35,7 @@ interface StakeProps {
 }
 
 const Stake: React.FC<StakeProps> = ({ bank }) => {
-  console.log({bank})
+  //console.log({bank})
   const [approveStatus, approve] = useApprove(bank.depositToken, bank.address);
 
   const {color: themeColor} = useContext(ThemeContext);
@@ -112,8 +112,8 @@ const Stake: React.FC<StakeProps> = ({ bank }) => {
                     </Typography>
             {/* <Label text={`${bank.depositTokenName} Staked`} /> */}
           </StyledCardHeader>
-          <StyledCardActions>
-            {approveStatus !== ApprovalState.APPROVED ? (
+          {/* <StyledCardActions> */}
+            {/* {approveStatus !== ApprovalState.APPROVED ? (
               <Button
                 disabled={
                   bank.closedForStaking ||
@@ -163,7 +163,7 @@ const Stake: React.FC<StakeProps> = ({ bank }) => {
                 </IconButton>
               </>
             )}
-          </StyledCardActions>
+          </StyledCardActions> */}
         </StyledCardContentInner>
       </CardContent>
     </Card>

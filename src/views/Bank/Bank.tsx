@@ -19,6 +19,7 @@ import useRedeem from '../../hooks/useRedeem';
 import {Bank as BankEntity} from '../../bomb-finance';
 import useBombFinance from '../../hooks/useBombFinance';
 import {Alert} from '@material-ui/lab';
+//import Stake2 from '../Dashboard/components/Stake2';
 //import { bankDefinitions } from '../../config';
 
 const useStyles = makeStyles((theme) => ({
@@ -41,17 +42,14 @@ const Bank: React.FC = () => {
 
 
    let statsOnPool = useStatsForPool(bank);
-  // console.log(statsOnPool);
-
+ 
   //   if (bank.depositTokenName.includes('80BOMB-20BTCB-LP') || bank.depositTokenName.includes('80BSHARE-20WBNB-LP')) {
   //     statsOnPool = {
   //       dailyAPR: 'COMING SOON',
   //       yearlyAPR: 'COMING SOON',
   //       TVL: 'COMING SOON',
   //     }
-  //   } 
-  
-  
+  //   }
   //const statsOnPool = useStatsForPool(bank);
   let vaultUrl: string;
   if (bank.depositTokenName.includes('BOMB-BTCB')) {
@@ -64,13 +62,15 @@ const Bank: React.FC = () => {
      else if (bank.depositTokenName.includes('BSHARE-BNB')) {
     vaultUrl = 'https://www.bomb.farm/#/bsc/vault/bomb-bshare-wbnb';
   }
+  // console.log(statsOnPool);
+
 
   return account && bank ? (
     <>
       <PageHeader
         icon="💣"
    //     subtitle={`Deposit ${bank?.depositTokenName} and earn ${bank?.earnTokenName}`}
-        title={bank?.name}
+        title={bank?.name} 
       />
          <Box mt={5}>
           {(vaultUrl) ? (
@@ -87,7 +87,7 @@ const Bank: React.FC = () => {
           <Grid item xs={12} md={2} lg={2} className={classes.gridItem}>
             <Card className={classes.gridItem}>
               <CardContent style={{textAlign: 'center'}}>
-                <Typography>APR</Typography>
+                <Typography>APR </Typography>
                 <Typography>{bank.closedForStaking ? '0.00' : statsOnPool?.yearlyAPR}%</Typography>
               </CardContent>
             </Card>
@@ -104,6 +104,7 @@ const Bank: React.FC = () => {
             <Card className={classes.gridItem}>
               <CardContent style={{textAlign: 'center'}}>
                 <Typography>TVL</Typography>
+                
                 <Typography>${statsOnPool?.TVL}</Typography>
               </CardContent>
             </Card>
@@ -119,6 +120,7 @@ const Bank: React.FC = () => {
             </StyledCardWrapper>
             <Spacer />
             <StyledCardWrapper>{<Stake bank={bank} />}</StyledCardWrapper>
+            
           </StyledCardsWrapper>
           <Spacer size="lg" />
           {bank.depositTokenName.includes('LP') && <LPTokenHelpText bank={bank} />}
@@ -132,7 +134,7 @@ const Bank: React.FC = () => {
         </StyledBank>
       </Box>
     </>
-  ) : !bank ? (
+)     : !bank ? (
     <BankNotFound />
   ) : (
     <UnlockWallet />
