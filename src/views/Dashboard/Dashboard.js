@@ -248,7 +248,7 @@ const useStyles = makeStyles((theme: Theme) =>
       }
      
     },
-    header: {},
+    header: {backgroundColor: "black",},
     content: {
       display: "flex",
       flexWrap: "wrap"
@@ -323,16 +323,18 @@ const classes = useStyles();
     <Page>
         <BackgroundImage />
 
-<Grid container spacing={3} style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)' }}>
-    <Grid item xs={12} style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)' }}>
-         <Card style={cardStyle} sx={{ maxWidth: 345 }}>
+<Grid container spacing={3} style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+    <Grid item xs={12} style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+         <Card  style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} sx={{ maxWidth: 345 }}>
      
       <CardContent>
-      
+     <center> BOMB FINANCE SUMMARY</center>
         <div style={{ display: 'block', padding: 30 }}>
   <Row>
     <Col>
+    <div style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.8)' }}>
     <DataTable columns={column} data={tableData} />
+    </div>
      </Col> <Col>
    
   </Col> <Col><Row><Row> <Typography>Current Epoch 
@@ -353,10 +355,10 @@ const classes = useStyles();
 </div>
  </CardContent></Card> </Grid>
         
- <Grid item xs={8} >
-    <Card style={cardStyle}>
-      <Card className={classes.root}>
-        <CardHeader
+ <Grid item xs={8} style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} >
+    
+      <Card style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} className={classes.root}>
+        <CardHeader style={{ backgroundColor: 'black' }}
           className={classes.header}
           component={Typography}
           title={ <Typography>Board room</Typography>}
@@ -398,34 +400,28 @@ const classes = useStyles();
  </div>
    </CardContent> 
       </Card>
-</Card>
+
 
   </Grid>
  
-  <Grid item xs={4} >
- <Card sx={{ maxWidth: 345 }}>
-      <CardMedia
-        sx={{ height: 140 }}
-        image="/static/images/cards/contemplative-reptile.jpg"
-        title="green iguana"
-      />
-     <CardContent>
-        <Typography gutterBottom variant="h5" component="div">
+  <Grid item xs={4} style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+ <Card style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} sx={{ maxWidth: 345 }}>
     
+     <CardContent>
+        <Typography gutterBottom variant="h9" component="div">
+        Advertisement
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Advertisement
-        </Typography>
+        
       </CardContent>
 
     </Card>
   </Grid>
   
-   <Grid item xs={12} >
- <Card sx={{ maxWidth: 345 }}>
+   <Grid item xs={12} style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} >
+
            
-<Card className={classes.root}>
-        <CardHeader
+<Card  style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} className={classes.root}>
+        <CardHeader style={{ backgroundColor: 'black' }}
           className={classes.header}
           component={Typography}
           title={ <Typography>BOMB FARMS</Typography>}
@@ -440,7 +436,7 @@ const classes = useStyles();
             }
         />
  
-        <CardHeader
+        <CardHeader style={{ backgroundColor: 'black' }}
           className={classes.header}
           component={Typography}
           subheader={ 
@@ -475,7 +471,7 @@ const classes = useStyles();
       <Col>   <Typography> <Button onClick={onPresentWithdrawLP}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}>Withdraw</Button></Typography></Col> 
       <Col>   <Button onClick={onReward}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}>Claim Rewards</Button></Col> 
   </Row> </div> </CardContent>
-        <CardHeader
+        <CardHeader style={{ backgroundColor: 'black' }}
           className={classes.header}
           component={Typography}
           subheader={ 
@@ -507,14 +503,14 @@ const classes = useStyles();
       <Col><Typography> <Button onClick={onPresentDepositLP}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}>Deposit</Button></Typography></Col> 
       <Col><Typography> <Button onClick={onPresentWithdrawLP}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}>Withdraw</Button></Typography></Col> 
       <Col><Button onClick={onReward}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}>Claim Reward of bshare</Button></Col> 
-  </Row> </div> </CardContent></Card></Card></Grid>
+  </Row> </div> </CardContent></Card></Grid>
   
 
 
-  <Grid item xs={12} >
-    <Card style={cardStyle}>
-       <Card className={classes.root}>
-        <CardHeader
+  <Grid item xs={12} style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} >
+    
+       <Card className={classes.root} style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} >
+        <CardHeader style={{ backgroundColor: 'black' }}
           className={classes.header}
           component={Typography}
           title={ <Typography>BONDS</Typography>}
@@ -547,7 +543,7 @@ const classes = useStyles();
           <Row>
              <Col>Redeem BOMB </Col>
                <Col> <Button onClick = {onWithdraw}  variant="contained" style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }} > redeem bomb</Button></Col></Row></Row>
-             </div> </CardContent> </Card></Card> </Grid>
+             </div> </CardContent> </Card></Grid>
     </Grid>
  </Page>
  );
