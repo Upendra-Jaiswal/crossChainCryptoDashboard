@@ -51,9 +51,13 @@ import WithdrawModal from './components/WithdrawModal';
 import useStakeToBoardroom from '../../hooks/useStakeToBoardroom';
 //claim reward on boardroom
 import useHarvestFromBoardroom from '../../hooks/useHarvestFromBoardroom';
-import isBondPurchasable from '../Bond/Bond';
+
 import DataTable from 'react-data-table-component';
 import useApprove, { ApprovalState } from '../../hooks/useApprove';
+//import { is } from 'immer/dist/internal';
+
+import { useTransactionAdder } from '../../state/transactions/hooks';
+import { BOND_REDEEM_PRICE, BOND_REDEEM_PRICE_BN } from '../../bomb-finance/constants';
 
 const BackgroundImage = createGlobalStyle`
   body {
@@ -64,14 +68,14 @@ const BackgroundImage = createGlobalStyle`
 `;
 
 // const Dashboard : React.FC<StakeProps> = ({ props }) => {
-const Dashboard = (props) => {
+export default function Dashboard(props) {
   const { account } = useWallet();
   const currentEpoch = useCurrentEpoch();
   const cashStat = useCashPriceInEstimatedTWAP();
   const totalStaked = useTotalStakedOnBoardroom();
   const scalingFactor = useMemo(() => (cashStat ? Number(cashStat.priceInDollars).toFixed(4) : null), [cashStat]);
   const { to } = useTreasuryAllocationTimes();
-
+  const addTransaction = useTransactionAdder();
   // for price and supply
   const bombStats = useBombStats();
   const btcStats = useBtcStats();
@@ -94,7 +98,7 @@ const Dashboard = (props) => {
   let bnbpool = useStatsForPool(bsharebnb);
   let bombpool = useStatsForPool(bombBSHARE);
 
-  const [approvProp, approve] = useApprove(banks[7].depositToken, banks[7].address);
+  const [approveStatus, approve] = useApprove(banks[7].depositToken, banks[7].address);
 
   //depostmodal boardroom
   const bombFinance = useBombFinance();
@@ -299,8 +303,27 @@ const Dashboard = (props) => {
   ];
 
   const classes = useStyles();
-
+  const isBondPurchasable = useMemo(() => Number(bondStat?.tokenInFtm) < 1.01, [bondStat]);
+  const isBondRedeemable = useMemo(() => cashPrice.gt(BOND_REDEEM_PRICE_BN), [cashPrice]);
   //console.log(banks[0]);
+  console.log(props.data2);
+
+  const handleRedeemBonds = useCallback(
+    async (amount: string) => {
+      const tx = await bombFinance.redeemBonds(amount);
+      addTransaction(tx, { summary: `Redeem ${amount} BBOND` });
+    },
+    [bombFinance, addTransaction],
+  );
+  const handleBuyBonds = useCallback(
+    async (amount: string) => {
+      const tx = await bombFinance.buyBonds(amount);
+      addTransaction(tx, {
+        summary: `Buy ${Number(amount).toFixed(2)} BBOND with ${amount} BOMB`,
+      });
+    },
+    [bombFinance, addTransaction],
+  );
   return (
     <Page>
       <BackgroundImage />
@@ -309,7 +332,8 @@ const Dashboard = (props) => {
         <Grid item xs={12} style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
           <Card style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} sx={{ maxWidth: 345 }}>
             <CardContent>
-              <center> BOMB FINANCE SUMMARY</center>
+              <center> BOMB FINANCE SUMMARY </center>
+
               <div style={{ display: 'block', padding: 30 }}>
                 <Row>
                   <Col>
@@ -384,36 +408,48 @@ const Dashboard = (props) => {
                 Total Staked: {getDisplayBalance(totalStaked)}
                 <Typography>
                   {' '}
-                  <Button
-                    onClick={onPresentDeposit}
-                    variant="contained"
-                    style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                  >
-                    deposit Button
-                  </Button>
+                  {!!account ? (
+                    <Button
+                      onClick={onPresentDeposit}
+                      variant="contained"
+                      style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
+                    >
+                      deposit Button
+                    </Button>
+                  ) : (
+                    <UnlockWallet />
+                  )}
                 </Typography>{' '}
                 <br />
                 <Typography>
                   {' '}
-                  <Button
-                    onClick={onPresentWithdraw}
-                    variant="contained"
-                    style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                  >
-                    withdrawButton
-                  </Button>
+                  {!!account ? (
+                    <Button
+                      onClick={onPresentWithdraw}
+                      variant="contained"
+                      style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
+                    >
+                      withdrawButton
+                    </Button>
+                  ) : (
+                    <UnlockWallet />
+                  )}
                 </Typography>
                 <br />
                 <Typography>
                   {' '}
-                  <Button
-                    onClick={onReward}
-                    variant="contained"
-                    style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                  >
-                    {' '}
-                    Claim Reward
-                  </Button>
+                  {!!account ? (
+                    <Button
+                      onClick={onReward}
+                      variant="contained"
+                      style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
+                    >
+                      {' '}
+                      Claim Reward
+                    </Button>
+                  ) : (
+                    <UnlockWallet />
+                  )}
                 </Typography>
               </div>
             </CardContent>
@@ -496,37 +532,49 @@ const Dashboard = (props) => {
                     {' '}
                     <Typography>
                       {' '}
-                      <Button
-                        onClick={onPresentDepositLP}
-                        variant="contained"
-                        style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                      >
-                        Deposit
-                      </Button>
+                      {!!account ? (
+                        <Button
+                          onClick={onPresentDepositLP}
+                          variant="contained"
+                          style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
+                        >
+                          Deposit
+                        </Button>
+                      ) : (
+                        <UnlockWallet />
+                      )}
                     </Typography>
                   </Col>
                   <Col>
                     {' '}
                     <Typography>
                       {' '}
-                      <Button
-                        onClick={onPresentWithdrawLP}
-                        variant="contained"
-                        style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                      >
-                        Withdraw
-                      </Button>
+                      {!!account ? (
+                        <Button
+                          onClick={onPresentWithdrawLP}
+                          variant="contained"
+                          style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
+                        >
+                          Withdraw
+                        </Button>
+                      ) : (
+                        <UnlockWallet />
+                      )}
                     </Typography>
                   </Col>
                   <Col>
                     {' '}
-                    <Button
-                      onClick={onReward}
-                      variant="contained"
-                      style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                    >
-                      Claim Reward
-                    </Button>
+                    {!!account ? (
+                      <Button
+                        onClick={onReward}
+                        variant="contained"
+                        style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
+                      >
+                        Claim Reward
+                      </Button>
+                    ) : (
+                      <UnlockWallet />
+                    )}
                   </Col>
                 </Row>{' '}
               </div>{' '}
@@ -574,35 +622,47 @@ const Dashboard = (props) => {
                   <Col>
                     <Typography>
                       {' '}
-                      <Button
-                        onClick={onPresentDepositLP}
-                        variant="contained"
-                        style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                      >
-                        Deposit
-                      </Button>
+                      {!!account ? (
+                        <Button
+                          onClick={onPresentDepositLP}
+                          variant="contained"
+                          style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
+                        >
+                          Deposit
+                        </Button>
+                      ) : (
+                        <UnlockWallet />
+                      )}
                     </Typography>
                   </Col>
                   <Col>
                     <Typography>
                       {' '}
-                      <Button
-                        onClick={onPresentWithdrawLP}
-                        variant="contained"
-                        style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                      >
-                        Withdraw
-                      </Button>
+                      {!!account ? (
+                        <Button
+                          onClick={onPresentWithdrawLP}
+                          variant="contained"
+                          style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
+                        >
+                          Withdraw
+                        </Button>
+                      ) : (
+                        <UnlockWallet />
+                      )}
                     </Typography>
                   </Col>
                   <Col>
-                    <Button
-                      onClick={onReward}
-                      variant="contained"
-                      style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                    >
-                      Claim Reward
-                    </Button>
+                    {!!account ? (
+                      <Button
+                        onClick={onReward}
+                        variant="contained"
+                        style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
+                      >
+                        Claim Reward
+                      </Button>
+                    ) : (
+                      <UnlockWallet />
+                    )}
                   </Col>
                 </Row>{' '}
               </div>{' '}
@@ -638,42 +698,29 @@ const Dashboard = (props) => {
                   <Row>
                     <Col>{!isBondPurchasable ? 'BOMB is over peg' : 'available for purcahse'}</Col>
                     <Col>
-                      {approvProp !== ApprovalState.APPROVED ? (
-                        <Button
-                          disabled={
-                            banks.closedForStaking ||
-                            approvProp === ApprovalState.PENDING ||
-                            approvProp === ApprovalState.UNKNOWN
-                          }
-                          onClick={approve}
-                          variant="contained"
-                          style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                        >
-                          {`Approve ${banks[7].depositTokenName}`}
-                        </Button>
+                      {!!account ? (
+                        <div>
+                          {approveStatus !== ApprovalState.APPROVED ? (
+                            <Button
+                              disabled={
+                                banks.closedForStaking ||
+                                approveStatus === ApprovalState.PENDING ||
+                                approveStatus === ApprovalState.UNKNOWN
+                              }
+                              onClick={handleBuyBonds}
+                              variant="contained"
+                              style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
+                            >
+                              {`Approve ${banks[7].depositTokenName}`}
+                            </Button>
+                          ) : (
+                            <>
+                              <Button disabled>Purchase</Button>
+                            </>
+                          )}
+                        </div>
                       ) : (
-                        <>
-                          <Button onClick={onPresentWithdraw}></Button>
-
-                          <Button
-                            disabled={
-                              banks.closedForStaking ||
-                              banks.depositTokenName === 'BOMB-BSHARE-LP' ||
-                              banks.depositTokenName === 'BOMB' ||
-                              banks.depositTokenName === 'BOMB-BTCB-LP' ||
-                              banks.depositTokenName === '80BOMB-20BTCB-LP' ||
-                              banks.depositTokenName === '80BSHARE-20WBNB-LP' ||
-                              banks.depositTokenName === 'BUSM-BUSD-LP' ||
-                              banks.depositTokenName === 'BBOND'
-                            }
-                            onClick={() => (banks.closedForStaking ? null : props.data.presentZap())}
-                          ></Button>
-
-                          <Button
-                            disabled={banks.closedForStaking}
-                            onClick={() => (banks.closedForStaking ? null : onPresentDeposit())}
-                          ></Button>
-                        </>
+                        <UnlockWallet />
                       )}
                     </Col>
                   </Row>
@@ -682,13 +729,18 @@ const Dashboard = (props) => {
                     <Col>Redeem BOMB </Col>
                     <Col>
                       {' '}
-                      <Button
-                        onClick={onWithdraw}
-                        variant="contained"
-                        style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                      >
-                        redeem bomb
-                      </Button>
+                      {!!account ? (
+                        <Button
+                          onClick={handleRedeemBonds}
+                          variant="contained"
+                          style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
+                          disabled={!isBondRedeemable}
+                        >
+                          {!isBondRedeemable ? `Enabled when 10,000 BOMB > ${BOND_REDEEM_PRICE}BTC` : null || 'Redeem'}
+                        </Button>
+                      ) : (
+                        <UnlockWallet />
+                      )}
                     </Col>
                   </Row>
                 </Row>
@@ -699,5 +751,5 @@ const Dashboard = (props) => {
       </Grid>
     </Page>
   );
-};
-export default Dashboard;
+}
+// export default Dashboard;
