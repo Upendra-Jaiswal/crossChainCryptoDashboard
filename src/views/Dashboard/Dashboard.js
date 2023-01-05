@@ -19,60 +19,39 @@ import useShareStats from '../../hooks/usebShareStats';
 import useBombStats from '../../hooks/useBombStats';
 //last hour twap price
 import useCashPriceInLastTWAP from '../../hooks/useCashPriceInLastTWAP';
-//boardroom
-import Stake from './components/Stake';
 import UnlockWallet from '../../components/UnlockWallet';
-import Harvest from './components/Harvest';
-import { getDisplayBalance } from '../../utils/formatBalance';
 import useCurrentEpoch from '../../hooks/useCurrentEpoch';
 import useCashPriceInEstimatedTWAP from '../../hooks/useCashPriceInEstimatedTWAP';
 import useTreasuryAllocationTimes from '../../hooks/useTreasuryAllocationTimes';
-import useTotalStakedOnBoardroom from '../../hooks/useTotalStakedOnBoardroom';
 import { createGlobalStyle } from 'styled-components';
 import HomeImage from '../../assets/img/background.jpg';
 import useBank from '../../hooks/useBank';
 import useStatsForPool from '../../hooks/useStatsForPool';
 import useBanks from '../../hooks/useBanks';
-//btcb stake
-import Value from '../../components/Value';
-import useStakedBalance from '../../hooks/useStakedBalance';
-import useStakedTokenPriceInDollars from '../../hooks/useStakedTokenPriceInDollars';
-//btcb earning
-import useEarnings from '../../hooks/useEarnings';
-//redeembomb
-//import SupplyBomb from '../Supply/components/SupplyBomb';
-import useRedeemFromBomb from '../../hooks/useRedeemFromBomb';
-//depositmodal for broadroom
-import DepositModal from '../Boardroom/components/DepositModal';
-import useTokenBalance from '../../hooks/useTokenBalance';
-import useModal from '../../hooks/useModal';
 import useBombFinance from '../../hooks/useBombFinance';
-import WithdrawModal from './components/WithdrawModal';
-import useStakeToBoardroom from '../../hooks/useStakeToBoardroom';
-//claim reward on boardroom
-import useHarvestFromBoardroom from '../../hooks/useHarvestFromBoardroom';
-
 import DataTable from 'react-data-table-component';
 import useApprove, { ApprovalState } from '../../hooks/useApprove';
-//import { is } from 'immer/dist/internal';
-
 import { useTransactionAdder } from '../../state/transactions/hooks';
 import { BOND_REDEEM_PRICE, BOND_REDEEM_PRICE_BN } from '../../bomb-finance/constants';
+import ModalHelper from './components/ModalHelper';
+import StakeForDashboard from './components/StakeForDashboard';
+import HarvestForDashboard from './components/HarvestForDashboard';
+import useTotalStakedOnBoardroom from '../../hooks/useTotalStakedOnBoardroom';
+import { getDisplayBalance } from '../../utils/formatBalance';
 
 const BackgroundImage = createGlobalStyle`
   body {
     background: url(${HomeImage}) repeat !important;
     background-size: cover !important;
-    background-color: #171923;
+    background-color: #171923; 
   }
 `;
 
-// const Dashboard : React.FC<StakeProps> = ({ props }) => {
-export default function Dashboard(props) {
+const Dashboard = () => {
   const { account } = useWallet();
   const currentEpoch = useCurrentEpoch();
   const cashStat = useCashPriceInEstimatedTWAP();
-  const totalStaked = useTotalStakedOnBoardroom();
+
   const scalingFactor = useMemo(() => (cashStat ? Number(cashStat.priceInDollars).toFixed(4) : null), [cashStat]);
   const { to } = useTreasuryAllocationTimes();
   const addTransaction = useTransactionAdder();
@@ -86,77 +65,56 @@ export default function Dashboard(props) {
   const cashPrice = useCashPriceInLastTWAP();
   const bondScale = (Number(cashPrice) / 100000000000000).toFixed(4);
 
-  //tvl
-  useEffect(() => window.scrollTo(0, 0));
-
   //for tvl,daily returns %, stakes, earned rewards, we have to do the following
   const [banks] = useBanks();
-  const btcb = useBank(banks[2].contract);
-  const bsharebnb = useBank(banks[4].contract);
-  const bombBSHARE = useBank(banks[5].contract);
-  let btcbpool = useStatsForPool(btcb);
-  let bnbpool = useStatsForPool(bsharebnb);
-  let bombpool = useStatsForPool(bombBSHARE);
+
+  const newData = banks.filter(
+    (finalData) =>
+      finalData.depositTokenName === 'BOMB-BSHARE-LP' ||
+      finalData.depositTokenName === 'BOMB-BTCB-LP' ||
+      finalData.depositTokenName === 'BSHARE-BNB-LP',
+  );
+
+  const StackFilter = banks.filter(
+    (stackData) =>
+      stackData.depositTokenName === 'BOMB-BSHARE-LP' ||
+      stackData.depositTokenName === 'BOMB-BTCB-LP' ||
+      stackData.depositTokenName === 'BSHARE-BNB-LP',
+  );
+
+  const HarvestFilter = banks.filter(
+    (harvestData) =>
+      harvestData.depositTokenName === 'BOMB-BSHARE-LP' || harvestData.depositTokenName === 'BSHARE-BNB-LP',
+  );
+
+  const DailyReturnsBombSHARE = banks.find(
+    (aprData) =>
+      aprData.depositTokenName === 'BOMB-BSHARE-LP' ||
+      aprData.depositTokenName === 'BOMB-BTCB-LP' ||
+      aprData.depositTokenName === 'BSHARE-BNB-LP',
+  );
+
+  const DailyReturnsBombBTCB = banks.find(
+    (aprData) =>
+      aprData.depositTokenName === 'BOMB-BSHARE-LP' ||
+      aprData.depositTokenName === 'BOMB-BTCB-LP' ||
+      aprData.depositTokenName === 'BSHARE-BNB-LP',
+  );
+  const DailyReturnsBhareBNB = banks.find(
+    (aprData) =>
+      aprData.depositTokenName === 'BOMB-BSHARE-LP' ||
+      aprData.depositTokenName === 'BOMB-BTCB-LP' ||
+      aprData.depositTokenName === 'BSHARE-BNB-LP',
+  );
+
+  let statAprBombSHARE = useStatsForPool(DailyReturnsBombSHARE);
+  let statAprBombBTCB = useStatsForPool(DailyReturnsBombBTCB);
+  let statAprBhareBNB = useStatsForPool(DailyReturnsBhareBNB);
 
   const [approveStatus, approve] = useApprove(banks[7].depositToken, banks[7].address);
 
-  //depostmodal boardroom
   const bombFinance = useBombFinance();
-  const stakedBalance = useTokenBalance(bombFinance.BSHARE);
-  const tokenBalance = useTokenBalance(bombFinance.BSHARE);
-  const stakedBalLP = useTokenBalance(bombFinance.BOMBBTCB_LP);
-  const toeknBalLP = useTokenBalance(bombFinance.BOMBBTCB_LP);
 
-  //claim reward of bshare in bomb farms section
-  const { onReward } = useHarvestFromBoardroom();
-  //redeem bomb
-  const { onWithdraw } = useRedeemFromBomb();
-
-  const stakedBalanceBTCB = useStakedBalance(banks[2].contract, banks[2].poolId);
-  const stakedTokenPriceInDollarsBTCB = useStakedTokenPriceInDollars(banks[2].depositTokenName, banks[2].depositToken);
-  const tokenPriceInDollarsStackBTCB = useMemo(
-    () => (stakedTokenPriceInDollarsBTCB ? stakedTokenPriceInDollarsBTCB : null),
-    [stakedTokenPriceInDollarsBTCB],
-  );
-  const earnedInDollarsBTCBStacked = (
-    Number(tokenPriceInDollarsStackBTCB) * Number(getDisplayBalance(stakedBalanceBTCB, banks[2].depositToken.decimal))
-  ).toFixed(2);
-
-  const stakedBalanceBNB = useStakedBalance(banks[4].contract, banks[4].poolId);
-  const stakedTokenPriceInDollarsBNB = useStakedTokenPriceInDollars(banks[4].depositTokenName, banks[4].depositToken);
-  const tokenPriceInDollarsStackBNB = useMemo(
-    () => (stakedTokenPriceInDollarsBNB ? stakedTokenPriceInDollarsBNB : null),
-    [stakedTokenPriceInDollarsBNB],
-  );
-  const earnedInDollarsBNBStacked = (
-    Number(tokenPriceInDollarsStackBNB) * Number(getDisplayBalance(stakedBalanceBNB, banks[4].depositToken.decimal))
-  ).toFixed(2);
-
-  //EARNED BTCB
-  const earningsBTCB = useEarnings(banks[2].contract, banks[2].earnTokenName, banks[2].poolId);
-  //earned btcb in dollar
-  const bombStatsBTCB = useBombStats();
-  const tShareStats = useShareStats();
-  const tokenStatsBTCB = banks[2].earnTokenName === 'BSHARE' ? tShareStats : bombStatsBTCB;
-  const tokenPriceInDollarsHarvestBTCB = useMemo(
-    () => (tokenStatsBTCB ? Number(tokenStatsBTCB.priceInDollars).toFixed(2) : null),
-    [tokenStatsBTCB],
-  );
-  const earnedInDollarsBTCB = (
-    Number(tokenPriceInDollarsHarvestBTCB) * Number(getDisplayBalance(earningsBTCB))
-  ).toFixed(2);
-
-  //EARNED BNB
-  const earningsBNB = useEarnings(banks[4].contract, banks[4].earnTokenName, banks[2].poolId);
-  //earned btcb in dollar
-  const tokenStatsBNB = banks[4].earnTokenName === 'BSHARE' ? tShareStats : bombStatsBTCB;
-  const tokenPriceInDollarsHarvestBNB = useMemo(
-    () => (tokenStatsBNB ? Number(tokenStatsBNB.priceInDollars).toFixed(2) : null),
-    [tokenStatsBNB],
-  );
-  const earnedInDollarsBNB = (Number(tokenPriceInDollarsHarvestBNB) * Number(getDisplayBalance(earningsBTCB))).toFixed(
-    2,
-  );
   //for  btc price bomb price sgare price
   const btcPriceInDollars = useMemo(() => (btcStats ? Number(btcStats).toFixed(2) : null), [btcStats]);
   const bombPriceInDollars = useMemo(
@@ -166,52 +124,6 @@ export default function Dashboard(props) {
   const sharePriceInDollars = useMemo(
     () => (shareStats ? Number(shareStats.priceInDollars).toFixed(2) : null),
     [shareStats],
-  );
-
-  //withdraw and deposit(stake)from boardroom
-  const { onStake } = useStakeToBoardroom();
-  const [onPresentDeposit, onDismissDeposit] = useModal(
-    <DepositModal
-      max={tokenBalance}
-      onConfirm={(value) => {
-        onStake(value);
-        onDismissDeposit();
-      }}
-      tokenName={'BSHARE'}
-    />,
-  );
-
-  const [onPresentWithdraw, onDismissWithdraw] = useModal(
-    <WithdrawModal
-      max={stakedBalance}
-      onConfirm={(value) => {
-        onWithdraw(value);
-        onDismissWithdraw();
-      }}
-      tokenName={'BSHARE'}
-    />,
-  );
-
-  const [onPresentDepositLP, onDismissDepositLP] = useModal(
-    <DepositModal
-      max={toeknBalLP}
-      onConfirm={(value) => {
-        onStake(value);
-        onDismissDepositLP();
-      }}
-      tokenName={'BOMBBTCB_LP'}
-    />,
-  );
-
-  const [onPresentWithdrawLP, onDismissWithdrawLP] = useModal(
-    <WithdrawModal
-      max={stakedBalLP}
-      onConfirm={(value) => {
-        onWithdraw(value);
-        onDismissWithdrawLP();
-      }}
-      tokenName={'BOMBBTCB_LP'}
-    />,
   );
 
   const useStyles = makeStyles((theme: Theme) =>
@@ -293,7 +205,8 @@ export default function Dashboard(props) {
     bombPriceInDollars,
     sharePriceInDollars,
     btcPriceInDollars,
-  ]); // Only re-run the effect when the dependencies change
+  ]);
+  console.log(HarvestFilter);
 
   const column = [
     { name: ' ', selector: 'Currency' },
@@ -305,8 +218,8 @@ export default function Dashboard(props) {
   const classes = useStyles();
   const isBondPurchasable = useMemo(() => Number(bondStat?.tokenInFtm) < 1.01, [bondStat]);
   const isBondRedeemable = useMemo(() => cashPrice.gt(BOND_REDEEM_PRICE_BN), [cashPrice]);
-  //console.log(banks[0]);
-  console.log(props.data2);
+
+  const totalStaked = useTotalStakedOnBoardroom();
 
   const handleRedeemBonds = useCallback(
     async (amount: string) => {
@@ -324,6 +237,7 @@ export default function Dashboard(props) {
     },
     [bombFinance, addTransaction],
   );
+
   return (
     <Page>
       <BackgroundImage />
@@ -389,68 +303,68 @@ export default function Dashboard(props) {
                 <div className={classes.content}>
                   <div className={`${classes.contentBesideSub}`}>Stake BSHARE and earn BOMB every epoch</div>
                   <div className={`${classes.contentBesideSub}`}> </div>
-                  <div className={`${classes.contentBesideSub}`}>TVL ${bombpool?.TVL}</div>
+                  <div className={`${classes.contentBesideSub}`}>TVL ${statAprBombSHARE?.TVL}</div>
                 </div>
               }
             />
             <CardContent className={classes.content}>
               <div className={`${classes.contentItemBoard} ${classes.textContent}`}>
-                Daily returns = ${bombpool?.dailyAPR}
+                <div> </div> DailyReturns <br />
+                {statAprBombSHARE?.dailyAPR}%
               </div>
               <div className={`${classes.contentItemBoard} ${classes.textContent}`}>
-                {!!account ? <Stake /> : <UnlockWallet />}
+                <div>
+                  {' '}
+                  Your Stake{' '}
+                  {!!account ? (
+                    <div>
+                      {StackFilter.filter((stackData) => stackData.depositTokenName === 'BOMB-BSHARE-LP').map(
+                        (stackData) => (
+                          <React.Fragment key={stackData.name}>
+                            <StakeForDashboard stackData={stackData} />
+                          </React.Fragment>
+                        ),
+                      )}
+                    </div>
+                  ) : (
+                    <UnlockWallet />
+                  )}
+                </div>
               </div>
               <div className={`${classes.contentItemBoard} ${classes.textContent}`}>
-                {!!account ? <Harvest /> : <UnlockWallet />}
+                <Typography>Earned</Typography>
+                {!!account ? (
+                  <div>
+                    {HarvestFilter.filter((harvestData) => harvestData.depositTokenName === 'BOMB-BSHARE-LP').map(
+                      (harvestData) => (
+                        <React.Fragment key={harvestData.name}>
+                          <HarvestForDashboard harvestData={harvestData} />
+                        </React.Fragment>
+                      ),
+                    )}
+                  </div>
+                ) : (
+                  <UnlockWallet />
+                )}
               </div>
 
               <div className={`${classes.contentItemBoard} ${classes.textContent}`}>
-                Total Staked: {getDisplayBalance(totalStaked)}
                 <Typography>
-                  {' '}
-                  {!!account ? (
-                    <Button
-                      onClick={onPresentDeposit}
-                      variant="contained"
-                      style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                    >
-                      deposit Button
-                    </Button>
-                  ) : (
-                    <UnlockWallet />
-                  )}
-                </Typography>{' '}
-                <br />
-                <Typography>
-                  {' '}
-                  {!!account ? (
-                    <Button
-                      onClick={onPresentWithdraw}
-                      variant="contained"
-                      style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                    >
-                      withdrawButton
-                    </Button>
-                  ) : (
-                    <UnlockWallet />
-                  )}
+                  <div>
+                    Total Staked
+                    {!!account ? <div> {getDisplayBalance(totalStaked)}</div> : <UnlockWallet />}
+                  </div>
+                  <div>
+                    {newData
+                      .filter((finalData) => finalData.depositTokenName === 'BOMB-BSHARE-LP')
+                      .map((finalData) => (
+                        <React.Fragment key={finalData.name}>
+                          <ModalHelper finalData={finalData} />
+                        </React.Fragment>
+                      ))}
+                  </div>
                 </Typography>
                 <br />
-                <Typography>
-                  {' '}
-                  {!!account ? (
-                    <Button
-                      onClick={onReward}
-                      variant="contained"
-                      style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                    >
-                      {' '}
-                      Claim Reward
-                    </Button>
-                  ) : (
-                    <UnlockWallet />
-                  )}
-                </Typography>
               </div>
             </CardContent>
           </Card>
@@ -493,33 +407,57 @@ export default function Dashboard(props) {
                   <div className={`${classes.contentBesideSub}`}>BOMB BTC-B</div>
                   <div className={`${classes.contentBesideSub}`}> </div>
                   <div className={`${classes.contentBesideSub}`}>
-                    {' '}
-                    <Typography> TVL ${btcbpool?.TVL}</Typography>
+                    <Typography> TVL ${statAprBombBTCB?.TVL}</Typography>
                   </div>
                 </div>
               }
             />
             <CardContent className={classes.content}>
               <div className={`${classes.contentItem} ${classes.textContent}`}>
-                Daily returns <Typography>{btcbpool?.dailyAPR}%</Typography>
+                <div> Daily returns </div>
+                <div> {statAprBombBTCB?.dailyAPR}</div>
               </div>
               <div className={`${classes.contentItem} ${classes.textContent}`}>
                 {!!account ? (
                   <Row>
                     <Col>
                       <Typography>
-                        Your Stake
-                        <Value value={getDisplayBalance(stakedBalanceBTCB, banks[2].depositToken.decimal)} />{' '}
+                        <div>
+                          Your Stake{' '}
+                          {!!account ? (
+                            <div>
+                              {StackFilter.filter((stackData) => stackData.depositTokenName === 'BOMB-BTCB-LP').map(
+                                (stackData) => (
+                                  <React.Fragment key={stackData.name}>
+                                    <StakeForDashboard stackData={stackData} />
+                                  </React.Fragment>
+                                ),
+                              )}
+                            </div>
+                          ) : (
+                            <UnlockWallet />
+                          )}
+                        </div>
                       </Typography>
-                      <Typography>IN DOLLARS {`≈ $${earnedInDollarsBTCBStacked}`}</Typography>
                     </Col>
                     <Col>
                       {' '}
                       <Typography>Earned</Typography>
                       <Typography>
-                        <Value value={getDisplayBalance(earningsBTCB)} />{' '}
+                        {!!account ? (
+                          <div>
+                            {HarvestFilter.filter(
+                              (harvestData) => harvestData.depositTokenName === 'BSHARE-BNB-LP',
+                            ).map((harvestData) => (
+                              <React.Fragment key={harvestData.name}>
+                                <HarvestForDashboard harvestData={harvestData} />
+                              </React.Fragment>
+                            ))}
+                          </div>
+                        ) : (
+                          <UnlockWallet />
+                        )}
                       </Typography>
-                      <Typography> {`≈ $${earnedInDollarsBTCB}`}</Typography>
                     </Col>
                   </Row>
                 ) : (
@@ -527,57 +465,14 @@ export default function Dashboard(props) {
                 )}
               </div>
               <div className={`${classes.contentItem} ${classes.textContent}`}>
-                <Row>
-                  <Col>
-                    {' '}
-                    <Typography>
-                      {' '}
-                      {!!account ? (
-                        <Button
-                          onClick={onPresentDepositLP}
-                          variant="contained"
-                          style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                        >
-                          Deposit
-                        </Button>
-                      ) : (
-                        <UnlockWallet />
-                      )}
-                    </Typography>
-                  </Col>
-                  <Col>
-                    {' '}
-                    <Typography>
-                      {' '}
-                      {!!account ? (
-                        <Button
-                          onClick={onPresentWithdrawLP}
-                          variant="contained"
-                          style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                        >
-                          Withdraw
-                        </Button>
-                      ) : (
-                        <UnlockWallet />
-                      )}
-                    </Typography>
-                  </Col>
-                  <Col>
-                    {' '}
-                    {!!account ? (
-                      <Button
-                        onClick={onReward}
-                        variant="contained"
-                        style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                      >
-                        Claim Reward
-                      </Button>
-                    ) : (
-                      <UnlockWallet />
-                    )}
-                  </Col>
-                </Row>{' '}
-              </div>{' '}
+                {newData
+                  .filter((finalData) => finalData.depositTokenName === 'BOMB-BTCB-LP')
+                  .map((finalData) => (
+                    <React.Fragment key={finalData.name}>
+                      <ModalHelper finalData={finalData} />
+                    </React.Fragment>
+                  ))}
+              </div>
             </CardContent>
             <CardHeader
               style={{ backgroundColor: 'black' }}
@@ -587,85 +482,62 @@ export default function Dashboard(props) {
                 <div className={classes.content}>
                   <div className={`${classes.contentBesideSub}`}> BSHARE-BNB </div>
                   <div className={`${classes.contentBesideSub}`}> </div>
-                  <div className={`${classes.contentBesideSub}`}>TVL ${bnbpool?.TVL}</div>
+                  <div className={`${classes.contentBesideSub}`}>TVL ${statAprBhareBNB?.TVL}</div>
                 </div>
               }
             />
             <CardContent className={classes.content}>
-              <div className={`${classes.contentItem} ${classes.textContent}`}>Daily returns {bnbpool?.dailyAPR}%</div>
+              <div className={`${classes.contentItem} ${classes.textContent}`}>
+                <div> Daily returns</div>
+                <div>{statAprBhareBNB?.dailyAPR}</div>
+              </div>
               <div className={`${classes.contentItem} ${classes.textContent}`}>
                 {!!account ? (
                   <Row>
-                    {' '}
                     <Col>
-                      {' '}
                       <Typography>
-                        {' '}
-                        Your stake <Value value={getDisplayBalance(stakedBalanceBNB, banks[4].depositToken.decimal)} />
-                        {`≈ $${earnedInDollarsBNBStacked}`}
+                        Your stake
+                        {StackFilter.filter((stackData) => stackData.depositTokenName === 'BSHARE-BNB-LP').map(
+                          (stackData) => (
+                            <React.Fragment key={stackData.name}>
+                              <StakeForDashboard stackData={stackData} />
+                            </React.Fragment>
+                          ),
+                        )}
                       </Typography>{' '}
                     </Col>
                     <Col>
                       <Typography>Earned</Typography>
                       <Typography>
-                        <Value value={getDisplayBalance(earningsBNB)} />
-                        {`≈ $${earnedInDollarsBNB}`}
+                        {!!account ? (
+                          <div>
+                            {HarvestFilter.filter(
+                              (harvestData) => harvestData.depositTokenName === 'BSHARE-BNB-LP',
+                            ).map((harvestData) => (
+                              <React.Fragment key={harvestData.name}>
+                                <HarvestForDashboard harvestData={harvestData} />
+                              </React.Fragment>
+                            ))}
+                          </div>
+                        ) : (
+                          <UnlockWallet />
+                        )}
                       </Typography>
-                    </Col>{' '}
+                    </Col>
                   </Row>
                 ) : (
                   <UnlockWallet />
                 )}{' '}
               </div>
               <div className={`${classes.contentItem} ${classes.textContent}`}>
-                <Row>
-                  <Col>
-                    <Typography>
-                      {' '}
-                      {!!account ? (
-                        <Button
-                          onClick={onPresentDepositLP}
-                          variant="contained"
-                          style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                        >
-                          Deposit
-                        </Button>
-                      ) : (
-                        <UnlockWallet />
-                      )}
-                    </Typography>
-                  </Col>
-                  <Col>
-                    <Typography>
-                      {' '}
-                      {!!account ? (
-                        <Button
-                          onClick={onPresentWithdrawLP}
-                          variant="contained"
-                          style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                        >
-                          Withdraw
-                        </Button>
-                      ) : (
-                        <UnlockWallet />
-                      )}
-                    </Typography>
-                  </Col>
-                  <Col>
-                    {!!account ? (
-                      <Button
-                        onClick={onReward}
-                        variant="contained"
-                        style={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3)' }}
-                      >
-                        Claim Reward
-                      </Button>
-                    ) : (
-                      <UnlockWallet />
-                    )}
-                  </Col>
-                </Row>{' '}
-              </div>{' '}
+                {newData
+                  .filter((finalData) => finalData.depositTokenName === 'BSHARE-BNB-LP')
+                  .map((finalData) => (
+                    <React.Fragment key={finalData.name}>
+                      <ModalHelper finalData={finalData} />
+                    </React.Fragment>
+                  ))}
+              </div>
             </CardContent>
           </Card>
         </Grid>
@@ -751,7 +623,5 @@ export default function Dashboard(props) {
       </Grid>
     </Page>
   );
-}
-// export default Dashboard;
-
-//final Submission
+};
+export default Dashboard;

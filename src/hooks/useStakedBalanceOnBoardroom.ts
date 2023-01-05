@@ -1,10 +1,10 @@
-import {useEffect, useState} from 'react';
-import {BigNumber} from 'ethers';
+import { useEffect, useState } from 'react';
+import { BigNumber } from 'ethers';
 import useBombFinance from './useBombFinance';
 import useRefresh from './useRefresh';
 
 const useStakedBalanceOnBoardroom = () => {
-  const {slowRefresh} = useRefresh();
+  const { slowRefresh } = useRefresh();
   const [balance, setBalance] = useState(BigNumber.from(0));
   const bombFinance = useBombFinance();
   const isUnlocked = bombFinance?.isUnlocked;

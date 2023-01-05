@@ -21,6 +21,7 @@ import { Alert } from '@material-ui/lab';
 import HomeImage from '../../assets/img/background.jpg';
 import { Grid, Box } from '@material-ui/core';
 import { Helmet } from 'react-helmet';
+import Dashboard from '../Dashboard';
 
 const BackgroundImage = createGlobalStyle`
   body {
@@ -42,6 +43,8 @@ const Bond: React.FC = (props) => {
   const bondsPurchasable = useBondsPurchasable();
 
   const bondBalance = useTokenBalance(bombFinance?.BBOND);
+
+
   //const scalingFactor = useMemo(() => (cashPrice ? Number(cashPrice) : null), [cashPrice]);
 
   const handleBuyBonds = useCallback(
@@ -69,74 +72,78 @@ const Bond: React.FC = (props) => {
   const bondScale = (Number(cashPrice) / 100000000000000).toFixed(4);
 
   return (
-    <Switch>
-      <Page>
-        <BackgroundImage />
-        <Helmet>
-          <title>{TITLE}</title>
-        </Helmet>
-        <Route exact path={path}>
-          <PageHeader icon={'💣'} title="Buy &amp; Redeem Bonds" subtitle="Earn premiums upon redemption" />
-        </Route>
-        {isBondPayingPremium === false ? (
-          <Box mt={5}>
-            <Grid item xs={12} sm={12} justify="center" style={{ margin: '18px', display: 'flex' }}>
-              <Alert variant="filled" severity="error">
-                <b>Claiming below 1.1 peg will not receive a redemption bonus, claim wisely!</b>
-              </Alert>
-            </Grid>
-          </Box>
-        ) : (
-          <></>
-        )}
+    <div>
+      
 
-        <StyledBond>
-          <StyledCardWrapper>
-            <ExchangeCard
-              action="Purchase"
-              fromToken={bombFinance.BOMB}
-              fromTokenName="BOMB"
-              toToken={bombFinance.BBOND}
-              toTokenName="BBOND"
-              priceDesc={
-                !isBondPurchasable
-                  ? 'BOMB is over peg'
-                  : getDisplayBalance(bondsPurchasable, 18, 4) + ' BBOND available for purchase'
-              }
-              onExchange={handleBuyBonds}
-              disabled={!bondStat || isBondRedeemable}
-            />
-          </StyledCardWrapper>
-          <StyledStatsWrapper>
-            <ExchangeStat
-              tokenName="10,000 BOMB"
-              description="Last-Hour TWAP Price"
-              //price={Number(bombStat?.tokenInFtm).toFixed(4) || '-'}
-              price={bondScale || '-'}
-            />
-            <Spacer size="md" />
-            <ExchangeStat
-              tokenName="10,000 BBOND"
-              description="Current Price: (BOMB)^2"
-              price={Number(bondStat?.tokenInFtm).toFixed(4) || '-'}
-            />
-          </StyledStatsWrapper>
-          <StyledCardWrapper>
-            <ExchangeCard
-              action="Redeem"
-              fromToken={bombFinance.BBOND}
-              fromTokenName="BBOND"
-              toToken={bombFinance.BOMB}
-              toTokenName="BOMB"
-              priceDesc={`${getDisplayBalance(bondBalance)} BBOND Available in wallet`}
-              onExchange={handleRedeemBonds}
-              disabled={!bondStat || bondBalance.eq(0) || !isBondRedeemable}
-              disabledDescription={!isBondRedeemable ? `Enabled when 10,000 BOMB > ${BOND_REDEEM_PRICE}BTC` : null}
-            />
-          </StyledCardWrapper>
-        </StyledBond>
-      </Page>
-    </Switch>
+      <Switch>
+        <Page>
+          <BackgroundImage />
+          <Helmet>
+            <title>{TITLE}</title>
+          </Helmet>
+          <Route exact path={path}>
+            <PageHeader icon={'💣'} title="Buy &amp; Redeem Bonds" subtitle="Earn premiums upon redemption" />
+          </Route>
+          {isBondPayingPremium === false ? (
+            <Box mt={5}>
+              <Grid item xs={12} sm={12} justify="center" style={{ margin: '18px', display: 'flex' }}>
+                <Alert variant="filled" severity="error">
+                  <b>Claiming below 1.1 peg will not receive a redemption bonus, claim wisely!</b>
+                </Alert>
+              </Grid>
+            </Box>
+          ) : (
+            <></>
+          )}
+
+          <StyledBond>
+            <StyledCardWrapper>
+              <ExchangeCard
+                action="Purchase"
+                fromToken={bombFinance.BOMB}
+                fromTokenName="BOMB"
+                toToken={bombFinance.BBOND}
+                toTokenName="BBOND"
+                priceDesc={
+                  !isBondPurchasable
+                    ? 'BOMB is over peg'
+                    : getDisplayBalance(bondsPurchasable, 18, 4) + ' BBOND available for purchase'
+                }
+                onExchange={handleBuyBonds}
+                disabled={!bondStat || isBondRedeemable}
+              />
+            </StyledCardWrapper>
+            <StyledStatsWrapper>
+              <ExchangeStat
+                tokenName="10,000 BOMB"
+                description="Last-Hour TWAP Price"
+                //price={Number(bombStat?.tokenInFtm).toFixed(4) || '-'}
+                price={bondScale || '-'}
+              />
+              <Spacer size="md" />
+              <ExchangeStat
+                tokenName="10,000 BBOND"
+                description="Current Price: (BOMB)^2"
+                price={Number(bondStat?.tokenInFtm).toFixed(4) || '-'}
+              />
+            </StyledStatsWrapper>
+            <StyledCardWrapper>
+              <ExchangeCard
+                action="Redeem"
+                fromToken={bombFinance.BBOND}
+                fromTokenName="BBOND"
+                toToken={bombFinance.BOMB}
+                toTokenName="BOMB"
+                priceDesc={`${getDisplayBalance(bondBalance)} BBOND Available in wallet`}
+                onExchange={handleRedeemBonds}
+                disabled={!bondStat || bondBalance.eq(0) || !isBondRedeemable}
+                disabledDescription={!isBondRedeemable ? `Enabled when 10,000 BOMB > ${BOND_REDEEM_PRICE}BTC` : null}
+              />
+            </StyledCardWrapper>
+          </StyledBond>
+        </Page>
+      </Switch>
+    </div>
   );
 };
 
@@ -170,5 +177,5 @@ const StyledStatsWrapper = styled.div`
   }
 `;
 
-//export  default Bond;
-export default Bond;
+export  default Bond;
+

@@ -27,7 +27,6 @@ import WithdrawModal from './WithdrawModal';
 import ZapModal from './ZapModal';
 import TokenSymbol from '../../../components/TokenSymbol';
 import { Bank } from '../../../bomb-finance';
-import Dashboard from '../../Dashboard/Dashboard';
 
 interface StakeProps {
   bank: Bank;
@@ -89,14 +88,9 @@ const Stake: React.FC<StakeProps> = ({ bank }) => {
       tokenName={bank.depositTokenName}
     />,
   );
-
-  console.log(bank);
-
+  //console.log(bank);
   return (
     <div>
-      <div>
-        <Dashboard data={{ approvProp: approveStatus, Bank: bank }} />
-      </div>
       <Card>
         <CardContent>
           <StyledCardContentInner>

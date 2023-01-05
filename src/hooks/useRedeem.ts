@@ -11,7 +11,7 @@ const useRedeem = (bank: Bank) => {
     handleTransactionReceipt(bombFinance.exit(bank.contract, bank.poolId), `Redeem ${bank.contract}`);
   }, [bank, bombFinance, handleTransactionReceipt]);
 
-  return {onRedeem: handleRedeem};
+  return {onRedeemBank: handleRedeem};
 };
 
 export default useRedeem;

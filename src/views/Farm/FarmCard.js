@@ -16,6 +16,7 @@ const FarmCard = ({ bank }) => {
   if (depositToken === '80BSHARE-20WBNB-LP') {
     depositToken = 'BSHARE-MAXI';
   }
+  console.log(bank);
   return (
     <Grid item xs={12} md={4} lg={4}>
       <Card variant="outlined">
@@ -48,11 +49,11 @@ const FarmCard = ({ bank }) => {
         </CardContent>
         <CardActions style={{ justifyContent: 'flex-end' }}>
           {!!account ? (
-              <Button className="shinyButtonSecondary" component={Link} to={`/farm/${bank.contract}`}>
-                  View
-              </Button>
+            <Button className="shinyButtonSecondary" component={Link} to={`/farm/${bank.contract}`}>
+              View
+            </Button>
           ) : (
-              <UnlockWallet />
+            <UnlockWallet />
           )}
         </CardActions>
       </Card>
