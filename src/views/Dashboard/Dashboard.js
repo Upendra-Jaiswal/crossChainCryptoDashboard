@@ -25,8 +25,8 @@ import useCashPriceInEstimatedTWAP from '../../hooks/useCashPriceInEstimatedTWAP
 import useTreasuryAllocationTimes from '../../hooks/useTreasuryAllocationTimes';
 import { createGlobalStyle } from 'styled-components';
 import HomeImage from '../../assets/img/background.jpg';
-import useBank from '../../hooks/useBank';
 import useStatsForPool from '../../hooks/useStatsForPool';
+import useBank from '../../hooks/useBank';
 import useBanks from '../../hooks/useBanks';
 import useBombFinance from '../../hooks/useBombFinance';
 import DataTable from 'react-data-table-component';
@@ -87,29 +87,14 @@ const Dashboard = () => {
       harvestData.depositTokenName === 'BOMB-BSHARE-LP' || harvestData.depositTokenName === 'BSHARE-BNB-LP',
   );
 
-  const DailyReturnsBombSHARE = banks.find(
-    (aprData) =>
-      aprData.depositTokenName === 'BOMB-BSHARE-LP' ||
-      aprData.depositTokenName === 'BOMB-BTCB-LP' ||
-      aprData.depositTokenName === 'BSHARE-BNB-LP',
-  );
+  const DailyReturnsBombSHARE = banks.find((aprData) => aprData.depositTokenName === 'BOMB-BSHARE-LP');
 
-  const DailyReturnsBombBTCB = banks.find(
-    (aprData) =>
-      aprData.depositTokenName === 'BOMB-BSHARE-LP' ||
-      aprData.depositTokenName === 'BOMB-BTCB-LP' ||
-      aprData.depositTokenName === 'BSHARE-BNB-LP',
-  );
-  const DailyReturnsBhareBNB = banks.find(
-    (aprData) =>
-      aprData.depositTokenName === 'BOMB-BSHARE-LP' ||
-      aprData.depositTokenName === 'BOMB-BTCB-LP' ||
-      aprData.depositTokenName === 'BSHARE-BNB-LP',
-  );
+  const DailyReturnsBombBTCB = banks.find((aprData) => aprData.depositTokenName === 'BOMB-BTCB-LP');
+  const DailyReturnsShareBNB = banks.find((aprData) => aprData.depositTokenName === 'BSHARE-BNB-LP');
 
   let statAprBombSHARE = useStatsForPool(DailyReturnsBombSHARE);
   let statAprBombBTCB = useStatsForPool(DailyReturnsBombBTCB);
-  let statAprBhareBNB = useStatsForPool(DailyReturnsBhareBNB);
+  let statAprBhareBNB = useStatsForPool(DailyReturnsShareBNB);
 
   const [approveStatus, approve] = useApprove(banks[7].depositToken, banks[7].address);
 
@@ -206,7 +191,7 @@ const Dashboard = () => {
     sharePriceInDollars,
     btcPriceInDollars,
   ]);
-  console.log(HarvestFilter);
+  // console.log(HarvestFilter);
 
   const column = [
     { name: ' ', selector: 'Currency' },
@@ -309,7 +294,7 @@ const Dashboard = () => {
             />
             <CardContent className={classes.content}>
               <div className={`${classes.contentItemBoard} ${classes.textContent}`}>
-                <div> </div> DailyReturns <br />
+                <div> </div> Daily returns <br />
                 {statAprBombSHARE?.dailyAPR}%
               </div>
               <div className={`${classes.contentItemBoard} ${classes.textContent}`}>
@@ -415,54 +400,50 @@ const Dashboard = () => {
             <CardContent className={classes.content}>
               <div className={`${classes.contentItem} ${classes.textContent}`}>
                 <div> Daily returns </div>
-                <div> {statAprBombBTCB?.dailyAPR}</div>
+                <div> {statAprBombBTCB?.dailyAPR} %</div>
               </div>
               <div className={`${classes.contentItem} ${classes.textContent}`}>
-                {!!account ? (
-                  <Row>
-                    <Col>
-                      <Typography>
-                        <div>
-                          Your Stake{' '}
-                          {!!account ? (
-                            <div>
-                              {StackFilter.filter((stackData) => stackData.depositTokenName === 'BOMB-BTCB-LP').map(
-                                (stackData) => (
-                                  <React.Fragment key={stackData.name}>
-                                    <StakeForDashboard stackData={stackData} />
-                                  </React.Fragment>
-                                ),
-                              )}
-                            </div>
-                          ) : (
-                            <UnlockWallet />
-                          )}
-                        </div>
-                      </Typography>
-                    </Col>
-                    <Col>
-                      {' '}
-                      <Typography>Earned</Typography>
-                      <Typography>
+                <Row>
+                  <Col>
+                    <Typography>
+                      <div>
+                        <Typography>Your Stake</Typography>
                         {!!account ? (
                           <div>
-                            {HarvestFilter.filter(
-                              (harvestData) => harvestData.depositTokenName === 'BSHARE-BNB-LP',
-                            ).map((harvestData) => (
-                              <React.Fragment key={harvestData.name}>
-                                <HarvestForDashboard harvestData={harvestData} />
-                              </React.Fragment>
-                            ))}
+                            {StackFilter.filter((stackData) => stackData.depositTokenName === 'BOMB-BTCB-LP').map(
+                              (stackData) => (
+                                <React.Fragment key={stackData.name}>
+                                  <StakeForDashboard stackData={stackData} />
+                                </React.Fragment>
+                              ),
+                            )}
                           </div>
                         ) : (
                           <UnlockWallet />
                         )}
-                      </Typography>
-                    </Col>
-                  </Row>
-                ) : (
-                  <UnlockWallet />
-                )}
+                      </div>
+                    </Typography>
+                  </Col>
+                  <Col>
+                    <div>
+                      <Typography>Earned</Typography>
+
+                      {!!account ? (
+                        <div>
+                          {HarvestFilter.filter((harvestData) => harvestData.depositTokenName === 'BSHARE-BNB-LP').map(
+                            (harvestData) => (
+                              <React.Fragment key={harvestData.name}>
+                                <HarvestForDashboard harvestData={harvestData} />
+                              </React.Fragment>
+                            ),
+                          )}
+                        </div>
+                      ) : (
+                        <UnlockWallet />
+                      )}
+                    </div>
+                  </Col>
+                </Row>
               </div>
               <div className={`${classes.contentItem} ${classes.textContent}`}>
                 {newData
@@ -489,45 +470,49 @@ const Dashboard = () => {
             <CardContent className={classes.content}>
               <div className={`${classes.contentItem} ${classes.textContent}`}>
                 <div> Daily returns</div>
-                <div>{statAprBhareBNB?.dailyAPR}</div>
+                <div>{statAprBhareBNB?.dailyAPR} %</div>
               </div>
               <div className={`${classes.contentItem} ${classes.textContent}`}>
-                {!!account ? (
-                  <Row>
-                    <Col>
-                      <Typography>
-                        Your stake
-                        {StackFilter.filter((stackData) => stackData.depositTokenName === 'BSHARE-BNB-LP').map(
-                          (stackData) => (
-                            <React.Fragment key={stackData.name}>
-                              <StakeForDashboard stackData={stackData} />
-                            </React.Fragment>
-                          ),
-                        )}
-                      </Typography>{' '}
-                    </Col>
-                    <Col>
-                      <Typography>Earned</Typography>
-                      <Typography>
+                <Row>
+                  <Col>
+                    <Typography>
+                      <div>
+                        <Typography>Your Stake</Typography>
                         {!!account ? (
                           <div>
-                            {HarvestFilter.filter(
-                              (harvestData) => harvestData.depositTokenName === 'BSHARE-BNB-LP',
-                            ).map((harvestData) => (
-                              <React.Fragment key={harvestData.name}>
-                                <HarvestForDashboard harvestData={harvestData} />
-                              </React.Fragment>
-                            ))}
+                            {StackFilter.filter((stackData) => stackData.depositTokenName === 'BSHARE-BNB-LP').map(
+                              (stackData) => (
+                                <React.Fragment key={stackData.name}>
+                                  <StakeForDashboard stackData={stackData} />
+                                </React.Fragment>
+                              ),
+                            )}
                           </div>
                         ) : (
                           <UnlockWallet />
                         )}
-                      </Typography>
-                    </Col>
-                  </Row>
-                ) : (
-                  <UnlockWallet />
-                )}{' '}
+                      </div>
+                    </Typography>{' '}
+                  </Col>
+                  <Col>
+                    <Typography>Earned</Typography>
+                    <Typography>
+                      {!!account ? (
+                        <div>
+                          {HarvestFilter.filter((harvestData) => harvestData.depositTokenName === 'BSHARE-BNB-LP').map(
+                            (harvestData) => (
+                              <React.Fragment key={harvestData.name}>
+                                <HarvestForDashboard harvestData={harvestData} />
+                              </React.Fragment>
+                            ),
+                          )}
+                        </div>
+                      ) : (
+                        <UnlockWallet />
+                      )}
+                    </Typography>
+                  </Col>
+                </Row>
               </div>
               <div className={`${classes.contentItem} ${classes.textContent}`}>
                 {newData

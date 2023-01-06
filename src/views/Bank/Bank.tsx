@@ -40,7 +40,10 @@ const Bank: React.FC = () => {
   const { account } = useWallet();
   const { onRedeemBank } = useRedeem(bank);
 
+
   let statsOnPool = useStatsForPool(bank);
+
+  console.log(bank);
 
   //console.log(bank);
   //   if (bank.depositTokenName.includes('80BOMB-20BTCB-LP') || bank.depositTokenName.includes('80BSHARE-20WBNB-LP')) {

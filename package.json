@@ -79,9 +79,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "deploy": "yarn build && netlify deploy --prod"
+    "test": "react-scripts test"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -97,8 +95,7 @@
     "@types/react-dom": "^16.9.8",
     "@types/react-router-dom": "^5.1.5",
     "@types/styled-components": "^5.1.2",
-    "prettier": "2.3.1",
-    "webpack": "^5.75.0"
+    "prettier": "2.3.1"
   },
   "packageManager": "yarn@3.2.0"
 }
