@@ -1,6 +1,6 @@
 # 🪦Welcome to the Bomb.money ecosystem🪦
 
-##find project site here 
+## find project site here 
 [https://bomb-dashboard-upendra.netlify.app/]
 
 Thanks for taking the time to contribute!
